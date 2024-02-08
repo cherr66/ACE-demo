@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Ace Demo",
+  "description": "A sticky-note-like popup",
+  "version": "0.1",
+  "icons": {
+    "16": "images/icon-16.png",
+    "32": "images/icon-32.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "action": {
+    // a dialog pop up when the toolbar button is clicked
+//     "default_popup": "popup/popup.html",
+    "default_title": "Game Accessibility Addon"
+  },
+
+  // uncomment below if customized setting page is needed
+  //"options_page": "settings/settings.html",
+
+
+  // activeTab: has access to active tabs and data
+  // scripting: has access to chrome.scripting API
+  "permissions": ["activeTab", "scripting", "storage", "sidePanel", "tabs"],
+
+  // allow this extension to read or modify host data including cookies, webRequest abd tabs
+  "host_permissions": [
+//    "https://itch.io/*",
+//    "https://*.itch.io/*",
+//    "https://html-classic.itch.zone/*"
+  ],
+
+  //Scripts that respond to browser events?
+  "background": {
+    "service_worker": "service-worker.js",
+    "script": ""
+  },
+
+  // js will be injected into web pages
+  "content_scripts": [
+    {
+      "matches": [
+        "https://itch.io/*",
+        "https://*.itch.io/*",
+        "https://html-classic.itch.zone/*"
+      ],
+      "run_at": "document_idle",
+      "js": ["content-utils.js","content.js"]
+    }
+  ],
+
+  //expose resources to websites
+  "web_accessible_resources": [
+    {
+      "matches": [
+//        "https://itch.io/*",
+//        "https://*.itch.io/*",
+        "https://html-classic.itch.zone/*"
+      ],
+      "resources": ["popup/*.*"]
+    }
+  ]
+}

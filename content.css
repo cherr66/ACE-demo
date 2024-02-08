@@ -1,0 +1,18 @@
+#demo_overlay {
+    position: fixed; !important;
+    top: 100px; !important;
+    left: 100px; !important;
+    width: 300px; !important;
+    height: 300px; !important;
+    background-color: palevioletred; !important;
+    border: 5px solid #000; !important;
+    padding: 10px; !important;
+    z-index: 9999; !important;
+    cursor: move; !important;
+}
+
+#demo_overlay > textarea {
+    width: 100%; !important;
+    height: 80px; !important;
+    resize: none; !important;
+}
