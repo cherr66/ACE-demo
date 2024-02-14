@@ -21,13 +21,13 @@
 
   // activeTab: has access to active tabs and data
   // scripting: has access to chrome.scripting API
-  "permissions": ["activeTab", "scripting", "storage", "sidePanel", "tabs"],
+  "permissions": ["activeTab", "scripting", "storage", "sidePanel", "tabs", "webNavigation"],
 
   // allow this extension to read or modify host data including cookies, webRequest abd tabs
   "host_permissions": [
 //    "https://itch.io/*",
 //    "https://*.itch.io/*",
-//    "https://html-classic.itch.zone/*"
+    "https://html-classic.itch.zone/*"
   ],
 
   //Scripts that respond to browser events?
@@ -38,15 +38,17 @@
 
   // js will be injected into web pages
   "content_scripts": [
-    {
-      "matches": [
-        "https://itch.io/*",
-        "https://*.itch.io/*",
-        "https://html-classic.itch.zone/*"
-      ],
-      "run_at": "document_idle",
-      "js": ["content-utils.js","content.js"]
-    }
+    // the below script will be executed automatically when extension icon clicked
+    // while I want to manually run the content.js inside service-worker
+//    {
+//      "matches": [
+//        "https://itch.io/*",
+//        "https://*.itch.io/*",
+//        "https://html-classic.itch.zone/*"
+//      ],
+//      "run_at": "document_idle",
+//      "js": ["content-utils.js","content.js"]
+//    }
   ],
 
   //expose resources to websites
@@ -57,7 +59,7 @@
 //        "https://*.itch.io/*",
         "https://html-classic.itch.zone/*"
       ],
-      "resources": ["popup/*.*"]
+      "resources": ["popup/*.*", "images/cursor/*.*"]
     }
   ]
 }

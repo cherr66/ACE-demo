@@ -82,13 +82,13 @@
     const loadHTML = (parentNode) => {
         const xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-            console.log("xhttp: " + this.readyState);
+            // console.log("xhttp: " + this.readyState);
             if (this.readyState === 4 && this.status === 200) {
                 const div = document.createElement('div');
                 div.innerHTML = this.responseText;
                 parentNode.appendChild(div);
             } else {
-                console.log('files not found');
+                // console.log('files not found');
             }
         };
         xhttp.open("GET", chrome.runtime.getURL("popup/popup-body.html"), true);
@@ -231,6 +231,7 @@
     let fontCSSElement;
     const customizedFontCSSID = "xuexian_ace_demo_font_settings" // TODO 改掉
     let currentFontSizeFactor = 1, currentFontFamily;
+
     const setupFontSettingCSS =() =>{
         if(fontCSSElement === undefined){
             const temp = document.getElementById(customizedFontCSSID);
@@ -242,20 +243,33 @@
                 fontCSSElement.id = customizedFontCSSID;
             }
         }
-
         if(fontCSSRules.length <= 0){
+            console.log("length < =0");
             fontCSSRules.push({
                 css:"body{font-size:1rem;!important; font-family: Arial, Helvetica, sans-serif;!important;}",
                 originalFontSize: 1,
                 originalFontFamily: "Arial, Helvetica, sans-serif"});
             collectAllFontRelatedCSS();
         }
+
+        // style.id = "xuexian1";
+        // const url1 = chrome.runtime.getURL('images/cursor/icon-48.png');
+        // const url2 = chrome.runtime.getURL('images/cursor/icon-128.png');
+        // const css = `body{cursor: url(${url1}) 16 16, auto;
+        //     a, button, input[type="button"], input[type="submit"], input[type="reset"] {
+        //         cursor: url(${url2}) 16 16, auto;}
+        //     }`
+        //
+        // style.appendChild(document.createTextNode(css));
+        // document.head.appendChild(style);
     }
 
     /**
      * Generate necessary html/css for selected features
      */
+    // TODO 改成font size + family
     let isFontSettingOn = true; // TODO get & set through pop-up setting
+    let isCursorSettingOn = true;
     const initializeFeatureRelatedStuff =() =>{
         if(isFontSettingOn){
             setupFontSettingCSS();
@@ -266,19 +280,24 @@
     /**
      * Communication with the rest of extensions
      */
-    window.addEventListener("message", (event) => {
+    function onMessageRecieved(event){
         if(!window.location.href.startsWith(event.origin)){
             return;
         }
-
+        console.log("message heard");
         if(typeof window[event.data.functionName] === "function"){
             window[event.data.functionName](event.data.parameters.newValue);
         }else{
             console.error("Function not found:", event.data.functionName);
         }
-    },false);
+    }
+
+    window.addEventListener("message", onMessageRecieved);
 
     function changeFontSize(newValue) {
+        // 为什么这里会被call两遍？
+        console.log("----changeFontSize");
+        console.log(fontCSSRules);
         fontCSSRules.forEach(rule => {
             if(rule.originalFontSize === null || rule.originalFontSize === undefined){
                 return;
@@ -350,6 +369,20 @@
         });
     }
 
+    function changeCursorSize(newValue){
+        console.log("changeCursorSize");
+        // let style = document.createElement('style');
+        // style.id = "xuexian1";
+        // const url1 = chrome.runtime.getURL('images/cursor/icon-48.png');
+        // const url2 = chrome.runtime.getURL('images/cursor/icon-128.png');
+        // const css = `body{cursor: url(${url1}) 16 16, auto;
+        //     a, button, input[type="button"], input[type="submit"], input[type="reset"] {
+        //         cursor: url(${url2}) 16 16, auto;}
+        //     }`
+        //
+        // style.appendChild(document.createTextNode(css));
+        // document.head.appendChild(style);
+    }
 
     // TODO change the functions name to more specific ones
     // retrieve necessary data
@@ -367,6 +400,21 @@
         });
     }
 
+    // receive messages from service-worker
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if(request.message === "toggle popup"){
+            root = document.getElementById(rootID);
+            if(root.style.display === "none"){
+                root.style.display = '';
+                initializeFeatureRelatedStuff();
+                onExtensionOpen();
+            }else{
+                root.setAttribute('style', 'display:none;');
+            }
+            sendResponse({ response: "The popup is toggled successfully." });
+        }
+        sendResponse({response: "Unknown request." });
+    });
 
     /**
      * Initialization
@@ -380,20 +428,6 @@
             loadHTML(windowDiv);
             applyScripts(root);
             initializeFeatureRelatedStuff();
-        }
-        else{
-            // if the root exists
-            // remove and create a new one (ONLY FOR testing)
-            // root.parentNode.removeChild(root);
-
-            // toggle it on/off
-            if(root.style.display === "none"){
-                root.style.display = '';
-                initializeFeatureRelatedStuff();
-                onExtensionOpen();
-            }else{
-                root.setAttribute('style', 'display:none;');
-            }
         }
     }
 

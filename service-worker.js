@@ -3,46 +3,45 @@
 // It would correspond to the background script in chrome extensions v2.
 
 // importScripts('service-worker-utils.js')
-let targetURL = /^https:\/\/itch\.io\//;
-// todo change to compatible games
-let targetGameURLs = [
+const targetWebSitesURLs = [
+    /^https:\/\/itch\.io\//
+];
+const targetGameURLs = [
     // /^https:\/\/.+\.itch\.io\/.+/,
     // https://jedb.itch.io/invitationem
     // /^https:\/\/jedb\.itch\.io\/invitationem$/,
     /https:\/\/html-classic\.itch\.zone\/html\/[\/\w.+]+\/[^\/]+\.html/,
-]
+];
 
 
 chrome.action.onClicked.addListener(async function (tab){
-    // TODO change it to arrays
-    if(tab.url.match(targetURL)){
-        // TODO let player know it only works for certain game pages
-
-        // TODO check if possible game content exists
-        // TODO document is not defined???
-        // const viewHtmlGame = document.querySelector('[id^="view_html_game_"]');
-        // const iframe = viewHtmlGame.querySelector('[id^="html_embed_"] .game_frame iframe');
-
-        // TODO use a new js to build the menu for redirecting? or use content.js
-        await chrome.scripting.executeScript({
-            target: {tabId: tab.id},
-            files: ['content.js']
-        });
-    } else if(targetGameURLs.some((urlPattern) => tab.url.match(urlPattern))){
-        await chrome.scripting.executeScript({
-            target: {tabId: tab.id},
-            files: ['content.js']
-        });
-    }
-    else{
-        // TODO if current tab is not target website, alert a warning
-    }
+    await chrome.tabs.sendMessage(tab.id, {message: "toggle popup"},
+        (r)=>{console.log(r);});
 });
 
 
 chrome.runtime.onInstalled.addListener(() => {
     console.log("Extension installed.");
 });
+
+chrome.webNavigation.onCompleted.addListener(async function(details)  {
+    if(targetWebSitesURLs.some((urlPattern) => details.url.match(urlPattern))){
+        // TODO the content.js can run in certain frame, try it
+        await chrome.scripting.executeScript({
+            target: {tabId: details.tabId},
+            files: ['content.js']
+        });
+        // TODO: OR, check if possible game content exists (in content.js, should not be in background.js),
+        //  if so, suggest for redirecting
+        // const viewHtmlGame = document.querySelector('[id^="view_html_game_"]');
+        // const iframe = viewHtmlGame.querySelector('[id^="html_embed_"] .game_frame iframe');
+    } else if(targetGameURLs.some((urlPattern) => details.url.match(urlPattern))){
+        await chrome.scripting.executeScript({
+            target: {tabId: details.tabId, allFrames: false},
+            files: ['content.js']
+        });
+    }
+})
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
