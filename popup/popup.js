@@ -37,6 +37,13 @@ const setCursorSizeSliderListener = () => {
     fontSizeSlider.oninput = function() {
         fontSizeSliderValue.innerHTML = `${(this.value * 100).toFixed(0)}%`;
         setSliderFill(this);
+        const messageData = {
+            sender: "popup.js",
+            functionName: "changeCursorSize",
+            parameters: {
+                newValue: this.value,
+            }};
+        window.postMessage(messageData, window.location.href);
     }
 }
 
