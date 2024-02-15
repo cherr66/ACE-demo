@@ -37,11 +37,11 @@ chrome.webNavigation.onCompleted.addListener(async function(details)  {
         // const iframe = viewHtmlGame.querySelector('[id^="html_embed_"] .game_frame iframe');
     } else if(targetGameURLs.some((urlPattern) => details.url.match(urlPattern))){
         await chrome.scripting.executeScript({
-            target: {tabId: details.tabId, allFrames: false},
-            files: ['content.js', 'content-utils.js']
+            target: {tabId: details.tabId},
+            files: ['content-utils.js','content.js']
         });
     }
-})
+});
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

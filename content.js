@@ -238,18 +238,19 @@ const initializeFeatureRelatedStuff =() =>{
         const cursorInBodyRule = injectionCSSRules.find(rule => /(?<=\bbody\s*{.*)cursor\s*:/.test(rule));
         if(!cursorInBodyRule){
             injectionCSSRules.push({
-                css:"body{cursor:default;}",
+                css:"body{cursor:default;!important;}",
                 originalCursorStyle: "default"
             });
         }
         injectionCSSRules.push({
-            css:"a, button, input[type=\"button\"], input[type=\"submit\"], input[type=\"reset\"] {cursor:pointer;}",
+            css:"a, button, input[type=\"button\"], input[type=\"submit\"], input[type=\"reset\"] {cursor:pointer;!important;}",
             originalCursorStyle: "pointer"
         });
-        injectionCSSRules.push({
-            css: "p, li, td, label, option, strong, em, b, i, u, h1, h2, h3, h4, h5, h6 {cursor: text;}",
-            originalCursorStyle: "text"
-        });
+        // comment below to avoid jumping cursor caused by shifting between default text and customized pattern
+        // injectionCSSRules.push({
+        //     css: "p, li, td, label, option, strong, em, b, i, u, h1, h2, h3, h4, h5, h6 {cursor: text;!important;}",
+        //     originalCursorStyle: "text"
+        // });
     }
 }
 
