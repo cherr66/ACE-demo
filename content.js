@@ -25,7 +25,7 @@ const createDOMRoot = () => {
     // TODO change id to customized tag, prefix SHOULD BE global variable
     const popupDiv = document.createElement('div');
     popupDiv.setAttribute('id', rootID);
-    document.body.appendChild(popupDiv);
+    document.documentElement.appendChild(popupDiv);
     return popupDiv.attachShadow({mode: 'open'});
 }
 
@@ -53,7 +53,8 @@ const createPopupWindowDiv = (parentNode) =>{
         'background: white; ' +
         'overflow-y: hidden; ' +
         'box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2); ' +
-        'border-radius: 10px; '
+        'border-radius: 10px; ' +
+        'cursor: default;!important; '
     );
     mainDivInShadow.appendChild(windowDiv);
     return windowDiv;
