@@ -37,6 +37,7 @@ const setCursorSizeSliderListener = () => {
     fontSizeSlider.oninput = function() {
         fontSizeSliderValue.innerHTML = `${(this.value * 100).toFixed(0)}%`;
         setSliderFill(this);
+
         const messageData = {
             sender: "popup.js",
             functionName: "changeCursorSize",
@@ -70,7 +71,6 @@ const setFontStyleDropDown = () => {
             }
             childElem.classList.add('selected');
 
-            // TODO send message to content.js to apply the corresponding CSS
             const messageData = {
                 sender: "popup.js",
                 functionName: "changeFontFamily",
@@ -78,7 +78,6 @@ const setFontStyleDropDown = () => {
                     newValue: childElem.innerHTML,
                 }};
             window.postMessage(messageData, window.location.href);
-
 
             // close dropdown menu
             if (!dropdown.classList.contains('hide')) {

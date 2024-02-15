@@ -141,6 +141,7 @@
     const regexFontFamilyValue = /(?<=font-family\s*?:\s*)(?:[^:;!}]+)/;
     const regexFontSizeValueInFont = /(?<=font\s*:[^/};]*)(?:[.\d]+)(?=cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%)/g;
     const regexFontFamilyValueInFont = /(?<=font\s*:[^/};]*\d+[cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%]*\s)(?:["'0-9a-zA-Z\s,-]+)/g;
+    const regexCursor = /(?<=cursor\s*:\s*)pointer|default(?=\s*[;|}])/;
 
     const getFontRelatedStyleSheet =(cssText, isCSSTextOriginal = true) => {
         const results = [];
@@ -155,42 +156,47 @@
                 rule = CSSBracesFix(rule);
             }
 
-            let matchedFontSize, matchedFontFamily;
+            let result = {};
             if(rule.includes('font-size')) {
                 let match = rule.match(regexFontSizeValue);
-                matchedFontSize = extractFontSizeOutOfMatchArray(match);
+                result.originalFontSize = extractFontSizeOutOfMatchArray(match);
             }
             if(rule.includes('font-family')){
                 const match = rule.match(regexFontFamilyValue);
                 if(match !== null){
-                    matchedFontFamily = match[0].trim();
+                    result.originalFontFamily = match[0].trim();
                 }
             }
-            if(matchedFontSize == null && matchedFontFamily == null){
+            if(Object.keys(result).length <= 0){
                 // Font property is a combination of font-size, font-family, etc.
                 // Usually, font property only appears without their existence.
                 if(/font(?=\s*?:)/g.test(rule)){
                     // If the rule contains 'font'
                     let match1 = rule.match(regexFontSizeValueInFont);
-                    matchedFontSize = extractFontSizeOutOfMatchArray(match1);
+                    result.originalFontSize = extractFontSizeOutOfMatchArray(match1);
 
                     const match2 = rule.match(regexFontFamilyValueInFont);
                     if(match2 !== null){
-                        matchedFontFamily = match2[0].trim();
+                        result.originalFontFamily = match2[0].trim();
                     }
                 }
             }
 
-            if(!isCSSTextOriginal && matchedFontSize !== undefined){
-                matchedFontSize = matchedFontSize/currentFontSizeFactor;
+            // temporarily unused
+            // if(!isCSSTextOriginal && result.originalFontSize !== undefined){
+            //     result.originalFontSize = result.originalFontSize/currentFontSizeFactor;
+            // }
+
+            if(/cursor\s*:\s*pointer/.test(rule) || /cursor\s*:\s*default/.test(rule)){
+                const match = rule.match(regexCursor);
+                if(match !== null){
+                    result.originalCursorStyle = match[0];
+                }
             }
 
-            if(matchedFontSize !== undefined && matchedFontFamily !== undefined){
-                results.push({css:rule, originalFontSize: matchedFontSize, originalFontFamily: matchedFontFamily});
-            }else if(matchedFontSize !== undefined){
-                results.push({css:rule, originalFontSize: matchedFontSize});
-            }else if(matchedFontFamily !== undefined){
-                results.push({css:rule, originalFontFamily: matchedFontFamily});
+            if(Object.keys(result).length > 0){
+                result.css = rule;
+                results.push(result);
             }
         });
         return results;
@@ -209,9 +215,9 @@
     const collectAllFontRelatedCSS =() => {
         // If fontCSSElement exists in the document, just need to make a copy
         // after retrieving multiply factor in onExtensionOpen
-        if(fontCSSElement.textContent.length > 0){
-            return;
-        }
+        // if(fontCSSElement.textContent.length > 0){
+        //     return;
+        // }
 
         const styleSheets = document.querySelectorAll('link[rel="stylesheet"]');
         styleSheets.forEach(link => {
@@ -231,8 +237,13 @@
     let fontCSSElement;
     const customizedFontCSSID = "xuexian_ace_demo_font_settings" // TODO 改掉
     let currentFontSizeFactor = 1, currentFontFamily;
+    let isFontSettingOn = true; // TODO get & set through pop-up setting
+    let isCursorSettingOn = true;
 
-    const setupFontSettingCSS =() =>{
+    /**
+     * Generate necessary html/css for selected features
+     */
+    const initializeFeatureRelatedStuff =() =>{
         if(fontCSSElement === undefined){
             const temp = document.getElementById(customizedFontCSSID);
             if(temp !== null){
@@ -243,36 +254,34 @@
                 fontCSSElement.id = customizedFontCSSID;
             }
         }
-        if(fontCSSRules.length <= 0){
-            console.log("length < =0");
-            fontCSSRules.push({
-                css:"body{font-size:1rem;!important; font-family: Arial, Helvetica, sans-serif;!important;}",
-                originalFontSize: 1,
-                originalFontFamily: "Arial, Helvetica, sans-serif"});
-            collectAllFontRelatedCSS();
+        collectAllFontRelatedCSS();
+
+        if(isFontSettingOn){
+            if(fontCSSRules.length <= 0){
+                fontCSSRules.push({
+                    css:"body{font-size:1rem;!important; font-family: Arial, Helvetica, sans-serif;!important;}",
+                    originalFontSize: 1,
+                    originalFontFamily: "Arial, Helvetica, sans-serif"});
+            }
         }
 
-        // style.id = "xuexian1";
-        // const url1 = chrome.runtime.getURL('images/cursor/icon-48.png');
-        // const url2 = chrome.runtime.getURL('images/cursor/icon-128.png');
-        // const css = `body{cursor: url(${url1}) 16 16, auto;
-        //     a, button, input[type="button"], input[type="submit"], input[type="reset"] {
-        //         cursor: url(${url2}) 16 16, auto;}
-        //     }`
-        //
-        // style.appendChild(document.createTextNode(css));
-        // document.head.appendChild(style);
-    }
-
-    /**
-     * Generate necessary html/css for selected features
-     */
-    // TODO 改成font size + family
-    let isFontSettingOn = true; // TODO get & set through pop-up setting
-    let isCursorSettingOn = true;
-    const initializeFeatureRelatedStuff =() =>{
-        if(isFontSettingOn){
-            setupFontSettingCSS();
+        // If current cursor setting is on, create necessary CSS
+        if(isCursorSettingOn){
+            const cursorInBodyRule = fontCSSRules.find(rule => /(?<=\bbody\s*{.*)cursor\s*:/.test(rule));
+            if(!cursorInBodyRule){
+                fontCSSRules.push({
+                    css:"body{cursor:default;}",
+                    originalCursorStyle: "default"
+                });
+            }
+            fontCSSRules.push({
+                css:"a, button, input[type=\"button\"], input[type=\"submit\"], input[type=\"reset\"] {cursor:pointer;}",
+                originalCursorStyle: "pointer"
+            });
+            fontCSSRules.push({
+                css: "p, li, td, label, option, strong, em, b, i, u, h1, h2, h3, h4, h5, h6 {cursor: text;}",
+                originalCursorStyle: "text"
+            });
         }
     }
 
@@ -284,7 +293,7 @@
         if(!window.location.href.startsWith(event.origin)){
             return;
         }
-        console.log("message heard");
+
         if(typeof window[event.data.functionName] === "function"){
             window[event.data.functionName](event.data.parameters.newValue);
         }else{
@@ -294,10 +303,19 @@
 
     window.addEventListener("message", onMessageRecieved);
 
+    const splitAndReplace =(str, regex, sub) =>{
+        const arr = regex.exec(str);
+        if(arr !== null && arr[0] !== ''){
+            const splitIndex1 = arr.index;
+            const splitIndex2 = arr.index + arr[0].length;
+            const split1 = str.substring(0, splitIndex1);
+            const split2 = str.substring(splitIndex2);
+            str = split1 + sub + split2;
+        }
+        return str;
+    }
+
     function changeFontSize(newValue) {
-        // 为什么这里会被call两遍？
-        console.log("----changeFontSize");
-        console.log(fontCSSRules);
         fontCSSRules.forEach(rule => {
             if(rule.originalFontSize === null || rule.originalFontSize === undefined){
                 return;
@@ -311,22 +329,14 @@
             }else{
                 regex1 = RegExp(regexFontSizeValueInFont, '');
             }
-
-            const arr = regex1.exec(rule.css);
-            if(arr !== null && arr[0] !== ''){
-                const splitIndex1 = arr.index;
-                const splitIndex2 = arr.index + arr[0].length;
-                const split1 = rule.css.substring(0, splitIndex1);
-                const split2 = rule.css.substring(splitIndex2);
-                rule.css = split1 + newFontSizeValue.toString() + split2;
-            }
+            rule.css = splitAndReplace(rule.css, regex1, newFontSizeValue.toString())
         });
         // write the new CSS rules to the document
         updateCustomizedFontCSS(fontCSSRules, true);
         // TODO 改到 onshutdown
-        chrome.storage.sync.set({fontSize: currentFontSizeFactor}, function() {
-            // console.log(`Saved Property fontSize: ${currentFontSizeFactor}`);
-        });
+        // chrome.storage.sync.set({fontSize: currentFontSizeFactor}, function() {
+        //     console.log(`Saved Property fontSize: ${currentFontSizeFactor}`);
+        // });
     }
 
     function changeFontFamily(newValue){
@@ -352,40 +362,47 @@
             }else{
                 regex1 = RegExp(regexFontFamilyValueInFont, '');
             }
-
-            const arr = regex1.exec(rule.css);
-            if(arr !== null && arr[0] !== ''){
-                const splitIndex1 = arr.index;
-                const splitIndex2 = arr.index + arr[0].length;
-                const split1 = rule.css.substring(0, splitIndex1);
-                const split2 = rule.css.substring(splitIndex2);
-                rule.css = split1 + newFontFamilyStr + split2;
-            }
+            rule.css = splitAndReplace(rule.css, regex1, newFontFamilyStr)
         });
         updateCustomizedFontCSS(fontCSSRules, true);
         // TODO 改到 onshutdown
-        chrome.storage.sync.set({fontFamily: currentFontFamily}, function() {
-            // console.log(`Saved Property fontSize: ${currentFontFamily}`);
-        });
+        // chrome.storage.sync.set({fontFamily: currentFontFamily}, function() {
+        //     console.log(`Saved Property fontSize: ${currentFontFamily}`);
+        // });
     }
 
     function changeCursorSize(newValue){
-        console.log("changeCursorSize");
-        // let style = document.createElement('style');
-        // style.id = "xuexian1";
-        // const url1 = chrome.runtime.getURL('images/cursor/icon-48.png');
-        // const url2 = chrome.runtime.getURL('images/cursor/icon-128.png');
-        // const css = `body{cursor: url(${url1}) 16 16, auto;
-        //     a, button, input[type="button"], input[type="submit"], input[type="reset"] {
-        //         cursor: url(${url2}) 16 16, auto;}
-        //     }`
-        //
-        // style.appendChild(document.createTextNode(css));
-        // document.head.appendChild(style);
+        const newCursorSize = newValue * 16;
+        fontCSSRules.forEach(rule => {
+            if (rule.originalCursorStyle === null || rule.originalCursorStyle === undefined) {
+                return;
+            }
+            if(rule.originalCursorStyle === "text"){
+                return;
+            }
+
+            // use OS cursor instead of url referred images IF newValue is 1
+            if(newValue === "1"){
+                rule.css = splitAndReplace(rule.css, /(?<=cursor:)url\(.+\).+auto/, rule.originalCursorStyle+";");
+                return;
+            }
+
+            // IF cursor:point OR cursor:default
+            if(/cursor\s*:\s*pointer/.test(rule.css) || /cursor\s*:\s*default/.test(rule.css)){
+                const cursorImageURL = chrome.runtime.getURL(`images/cursor/cursor-${rule.originalCursorStyle}-${newCursorSize}.png`);
+                const x = (rule.css.includes("default"))? 4 * newValue: 6 * newValue;
+                const newCursorValue = `url(${cursorImageURL}) ${x} ${newValue}, auto`;
+                rule.css = splitAndReplace(rule.css, regexCursor, newCursorValue)
+            }else{
+                // IF it is substituted url
+                rule.css = splitAndReplace(rule.css, /(?<=cursor\s*:\s*url.+)(16|32|48|64)(?=.png)/, newCursorSize.toString())
+            }
+        });
+        updateCustomizedFontCSS(fontCSSRules, true);
     }
 
     // TODO change the functions name to more specific ones
-    // retrieve necessary data
+    // retrieve necessary data from storage
     function onExtensionOpen(){
         chrome.storage.sync.get(['fontSize', 'fontFamily'], function(data) {
             if(data.fontFamily !== null && data.fontFamily !== undefined){
@@ -406,8 +423,6 @@
             root = document.getElementById(rootID);
             if(root.style.display === "none"){
                 root.style.display = '';
-                initializeFeatureRelatedStuff();
-                onExtensionOpen();
             }else{
                 root.setAttribute('style', 'display:none;');
             }
