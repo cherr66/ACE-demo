@@ -29,7 +29,7 @@ chrome.webNavigation.onCompleted.addListener(async function(details)  {
         // TODO the content.js can run in certain frame, try it
         await chrome.scripting.executeScript({
             target: {tabId: details.tabId},
-            files: ['content.js']
+            files: ['content.js', 'content-utils.js']
         });
         // TODO: OR, check if possible game content exists (in content.js, should not be in background.js),
         //  if so, suggest for redirecting
@@ -38,7 +38,7 @@ chrome.webNavigation.onCompleted.addListener(async function(details)  {
     } else if(targetGameURLs.some((urlPattern) => details.url.match(urlPattern))){
         await chrome.scripting.executeScript({
             target: {tabId: details.tabId, allFrames: false},
-            files: ['content.js']
+            files: ['content.js', 'content-utils.js']
         });
     }
 })

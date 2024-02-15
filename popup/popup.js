@@ -48,10 +48,9 @@ const setCursorSizeSliderListener = () => {
     }
 }
 
-// TODO 改一下style成family
-const setFontStyleDropDown = () => {
-    const dropdownBtn = getElementByDataID('font_style_dropdown_btn');
-    const dropdown = getElementByDataID('font_style_dropdown');
+const setFontFamilyDropDown = () => {
+    const dropdownBtn = getElementByDataID('font_family_dropdown_btn');
+    const dropdown = getElementByDataID('font_family_dropdown');
     for(let i = 0; i < dropdown.children.length; i++){
         const childElem = dropdown.children[i];
 
@@ -91,14 +90,14 @@ const setFontStyleDropDown = () => {
 }
 
 const showDropdown =() => {
-    getElementByDataID("font_style_dropdown").classList.toggle("hide");
+    getElementByDataID("font_family_dropdown").classList.toggle("hide");
 }
 
 const HideDropDown =(clickEvent) =>{
     const targetDataID = clickEvent.target.getAttribute('data-ace-id');
     // close dropdown if blank area is clicked
-    if(targetDataID !== 'font_style_dropdown_btn'){
-        const dropdown = getElementByDataID('font_style_dropdown');
+    if(targetDataID !== 'font_family_dropdown_btn'){
+        const dropdown = getElementByDataID('font_family_dropdown');
         if (!dropdown.classList.contains('hide')){
             dropdown.classList.add('hide');
         }
@@ -161,7 +160,7 @@ const setSoundEffectVolumeSliderListener = () => {
 const initialize = () => {
     setFontSizeSliderListener();
     setCursorSizeSliderListener();
-    setFontStyleDropDown();
+    setFontFamilyDropDown();
     setNarrationVolumeSliderListener();
     setGameVolumeSliderListener();
     setSoundEffectVolumeSliderListener();
