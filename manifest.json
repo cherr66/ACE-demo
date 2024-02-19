@@ -62,4 +62,5 @@
       "resources": ["popup/*.*", "images/cursor/*.*"]
     }
   ]
+//  "homepage_url": "https://example.com/my-extension-homepage"
 }

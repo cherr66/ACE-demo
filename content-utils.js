@@ -33,6 +33,22 @@ const splitAndReplace =(str, regex, sub) =>{
     return str;
 }
 
+function constrainNumber(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+
+// let tabID;
+// const getCurrentTabID =() => {
+//     if(tabID === undefined){
+//         chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+//             tabID = tabs[0].id;
+//             return tabID
+//         });
+//     }
+//     return tabID;
+// }
+
 let myQueryHelper = (elem, query, results) => {
     if (elem.className.toString().indexOf(query) >= 0) {
         results.push(elem);

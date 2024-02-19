@@ -38,15 +38,27 @@ chrome.webNavigation.onCompleted.addListener(async function(details)  {
     } else if(targetGameURLs.some((urlPattern) => details.url.match(urlPattern))){
         await chrome.scripting.executeScript({
             target: {tabId: details.tabId},
-            files: ['content-utils.js','content.js']
+            files: ['content-utils.js', 'content-magnifier.js', 'content.js']
         });
     }
 });
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(`A content script sent a message: ${request.greeting}`);
-    sendResponse({ response: "Response from background script" });
+    if(request.code === "GET_CAPTURED_TAB"){
+        const tabId = sender.tab.id;
+        chrome.tabs.captureVisibleTab({ format: "png" }, async function (image_url) {
+
+            chrome.tabs.getZoom(tabId,  function (zoomFactor) {
+                 chrome.tabs.sendMessage(tabId, {
+                    code: "GET_CAPTURED_TAB_RESPONSE",
+                    data_url: image_url, zoom: zoomFactor,
+                     // x: x
+                });
+            });
+        });
+        sendResponse({code:"SUCCESS"});
+    }
 });
 
 

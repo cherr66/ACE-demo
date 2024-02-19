@@ -25,6 +25,7 @@ const createDOMRoot = () => {
     // TODO change id to customized tag, prefix SHOULD BE global variable
     const popupDiv = document.createElement('div');
     popupDiv.setAttribute('id', rootID);
+    popupDiv.setAttribute('data-html2canvas-ignore', "true");
     document.documentElement.appendChild(popupDiv);
     return popupDiv.attachShadow({mode: 'open'});
 }
@@ -270,21 +271,26 @@ function onMessageRecieved(event){
         console.error("Function not found:", event.data.functionName);
     }
 }
-window.addEventListener("message", onMessageRecieved);
 
 // receive messages from service-worker
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.message === "toggle popup"){
-        root = document.getElementById(rootID);
-        if(root.style.display === "none"){
-            root.style.display = '';
-        }else{
-            root.setAttribute('style', 'display:none;');
-        }
+        togglePopup();
         sendResponse({ response: "The popup is toggled successfully." });
     }
     sendResponse({response: "Unknown request." });
 });
+
+function togglePopup(){
+    root = document.getElementById(rootID);
+    if(root.style.display === "none"){
+        root.style.display = '';
+        window.addEventListener("message", onMessageRecieved);
+    }else{
+        root.setAttribute('style', 'display:none;');
+        window.removeEventListener("message", onMessageRecieved);
+    }
+}
 
 function changeFontSize(newValue) {
     injectionCSSRules.forEach(rule => {
@@ -401,6 +407,7 @@ const initialize = () => {
         loadHTML(windowDiv);
         applyScripts(root);
         initializeFeatureRelatedStuff();
+        window.addEventListener("message", onMessageRecieved);
     }
 }
 
