@@ -7,6 +7,7 @@ const highlightCSS = `
         border: ${highlightBorderWidth}px dashed greenyellow;!important;
         position: absolute;!important;
         animation: blink 2s infinite alternate;!important;
+        pointer-events: none;!important;
     }
     @keyframes blink {
         0% {
@@ -75,15 +76,8 @@ const interactiveElementsObserver = new MutationObserver(mutationsList => {
                                 generateHighlight(btn):
                                 removeHighlight(btn);
                         });
-
-                        // isElementPhysicallyVisible(mutation.target)?
-                        //     DescendantInteractables.forEach(btn => generateHighlight(btn)):
-                        //     DescendantInteractables.forEach(btn => removeHighlight(btn));
                     }else{
                         mutation.target.addEventListener('animationend', function onInteractiveElemAncestorAnimationEnd(){
-                            // isElementPhysicallyVisible(mutation.target)?
-                            //     DescendantInteractables.forEach(btn => generateHighlight(btn)):
-                            //     DescendantInteractables.forEach(btn => removeHighlight(btn));
                             DescendantInteractables.forEach(btn => {
                                 isElementPhysicallyVisible(btn)?
                                     generateHighlight(btn):
@@ -103,30 +97,44 @@ const injectHighlightCSS =() => {
     styleElement.id = highlightCSSID;
     styleElement.textContent = highlightCSS;
     document.head.appendChild(styleElement);
+};
+
+function setHighlightRect(interactiveElem, highlight){
+    console.log("setHighlightStyle");
+    const mainElement = document.querySelector('main');
+    let minTop = 0;
+    let minLeft = 0;
+    let maxWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
+    let maxHeight = Math.min(window.innerHeight, document.documentElement.clientHeight);
+
+    if(mainElement){
+        const mainStyle = window.getComputedStyle(mainElement);
+        if(mainStyle.overflow !== 'visible'){
+            minTop = Math.max(parseInt(mainStyle.top), minTop);
+            minLeft = Math.max(parseInt(mainStyle.left), minLeft);
+            maxWidth = Math.min(parseInt(mainStyle.width), maxWidth);
+            maxHeight = Math.min(parseInt(mainStyle.height), maxHeight);
+        }
+    }
+    const offset = highlightBorderWidth + highlightPadding;
+    highlight.style.width = Math.min(interactiveElem.offsetWidth + offset * 2, maxWidth) + 'px';
+    highlight.style.height = Math.min(interactiveElem.offsetHeight + offset * 2, maxHeight)  + 'px';
+    highlight.style.top = Math.max(interactiveElem.offsetTop - offset, minTop) + 'px';
+    highlight.style.left = Math.max(interactiveElem.offsetLeft - offset, minLeft) + 'px';
 }
 
 function generateHighlight(interactiveElem){
-    const offset = highlightBorderWidth + highlightPadding;
-
     if(interactiveElements.includes(interactiveElem)){
         const index = interactiveElements.indexOf(interactiveElem);
-        highlightDIVs[index].style.width = interactiveElem.offsetWidth + offset * 2 + 'px';
-        highlightDIVs[index].style.height = interactiveElem.offsetHeight + offset * 2  + 'px';
-        highlightDIVs[index].style.top = interactiveElem.offsetTop - offset + 'px';
-        highlightDIVs[index].style.left = interactiveElem.offsetLeft - offset + 'px';
-        highlightDIVs[index].style.zIndex = (interactiveElem.style.zIndex - 1).toString();
+        setHighlightRect(interactiveElem, highlightDIVs[index]);
+        highlightDIVs[index].style.zIndex = getNumericalZIndex(interactiveElem).toString();
     }
     else{
         const highlight = document.createElement('div');
         highlight.classList.add('xuan');
-
-        highlight.style.width = interactiveElem.offsetWidth + offset * 2 + 'px';
-        highlight.style.height = interactiveElem.offsetHeight + offset * 2  + 'px';
-        highlight.style.top = interactiveElem.offsetTop - offset + 'px';
-        highlight.style.left = interactiveElem.offsetLeft - offset + 'px';
-        highlight.style.zIndex = (interactiveElem.style.zIndex - 1).toString();
-
-        interactiveElem.parentNode.insertBefore(highlight, interactiveElem.nextSibling);
+        setHighlightRect(interactiveElem, highlight);
+        highlight.style.zIndex = getNumericalZIndex(interactiveElem).toString();
+        interactiveElem.parentNode.insertBefore(highlight, interactiveElem);
         interactiveElements.push(interactiveElem);
         highlightDIVs.push(highlight);
     }

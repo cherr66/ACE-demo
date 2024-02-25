@@ -167,8 +167,8 @@ function isElementUnobscured(element){
 
 function isElementInViewport(element) {
     const rect = element.getBoundingClientRect();
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
 
     return (
         rect.top < viewportHeight &&
@@ -226,4 +226,3 @@ let myQueryAll = (elem, query) => {
     myQueryHelper(elem, query, results);
     return results;
 };
-
