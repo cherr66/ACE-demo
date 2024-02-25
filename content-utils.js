@@ -119,23 +119,38 @@ function isElementVisuallyUnderTheOther(element, theOther){
     const ancestor_o = ancestors[1];
 
     let zIndex_e, zIndex_o;
+    let style_e, style_o;
     const position = element.compareDocumentPosition(theOther);
     // If 2 elements under same node, compare their stacking context and z-index
     zIndex_e = getNumericalZIndex(element);
     zIndex_o = getNumericalZIndex(theOther);
+    style_e = window.getComputedStyle(element);
+    style_o = window.getComputedStyle(theOther);
+
     // compare ancestors' z-index ONLY when they are not under the same node
     if(ancestor_e !== ancestor_o){
         if(ancestor_e !== undefined){
             zIndex_e = getNumericalZIndex(ancestor_e);
+            style_e = window.getComputedStyle(ancestor_e);
         }
         if(ancestor_o !== undefined){
             zIndex_o = getNumericalZIndex(ancestor_o);
+            style_o = window.getComputedStyle(ancestor_o);
         }
     }
-    if(zIndex_o === zIndex_e && (position & Node.DOCUMENT_POSITION_FOLLOWING)){
-        return true;
+
+    if(style_o.position === 'static'){
+        return false;
     }
-    return zIndex_o > zIndex_e;
+    if(style_o.position !== 'static' && style_e.position === 'static' ){
+        return (position & Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+    if(style_o.position !== 'static' && style_e.position !== 'static'){
+        if(zIndex_o === zIndex_e){
+            return (position & Node.DOCUMENT_POSITION_FOLLOWING);
+        }
+        return zIndex_o > zIndex_e;
+    }
 }
 
 // is the object clearly visible and not obstructed or covered by any other objects
@@ -144,6 +159,8 @@ function isElementUnobscured(element){
     const centerX = rect.x + rect.width/2;
     const centerY = rect.y + rect.height/2;
     let possibleCovers = document.elementsFromPoint(centerX, centerY);
+    console.log(element);
+    console.log(possibleCovers);
     possibleCovers = possibleCovers.filter(c => {
         // remove self and ace_demo panel
         if (c === element || c.id === 'ace_demo_popup') {
@@ -162,6 +179,7 @@ function isElementUnobscured(element){
 
         return isElementVisuallyUnderTheOther(element, c);
     });
+    console.log(possibleCovers);
     return possibleCovers.length <= 0;
 }
 
@@ -169,6 +187,15 @@ function isElementInViewport(element) {
     const rect = element.getBoundingClientRect();
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
+
+    console.log(element);
+    console.log((
+        rect.top < viewportHeight &&
+        rect.bottom >0 &&
+        rect.left < viewportWidth &&
+        rect.right >0
+    ));
+
 
     return (
         rect.top < viewportHeight &&

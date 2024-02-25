@@ -100,7 +100,6 @@ const injectHighlightCSS =() => {
 };
 
 function setHighlightRect(interactiveElem, highlight){
-    console.log("setHighlightStyle");
     const mainElement = document.querySelector('main');
     let minTop = 0;
     let minLeft = 0;
