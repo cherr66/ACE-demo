@@ -126,7 +126,6 @@ function isElementVisuallyUnderTheOther(element, theOther){
     zIndex_o = getNumericalZIndex(theOther);
     style_e = window.getComputedStyle(element);
     style_o = window.getComputedStyle(theOther);
-
     // compare ancestors' z-index ONLY when they are not under the same node
     if(ancestor_e !== ancestor_o){
         if(ancestor_e !== undefined){
@@ -143,7 +142,11 @@ function isElementVisuallyUnderTheOther(element, theOther){
         return false;
     }
     if(style_o.position !== 'static' && style_e.position === 'static' ){
-        return (position & Node.DOCUMENT_POSITION_FOLLOWING);
+        if(position & Node.DOCUMENT_POSITION_FOLLOWING){
+            return true;
+        }else if(Node.DOCUMENT_POSITION_PRECEDING){
+            return zIndex_o > zIndex_e;
+        }
     }
     if(style_o.position !== 'static' && style_e.position !== 'static'){
         if(zIndex_o === zIndex_e){
@@ -151,6 +154,7 @@ function isElementVisuallyUnderTheOther(element, theOther){
         }
         return zIndex_o > zIndex_e;
     }
+    return false;
 }
 
 // is the object clearly visible and not obstructed or covered by any other objects
@@ -159,8 +163,6 @@ function isElementUnobscured(element){
     const centerX = rect.x + rect.width/2;
     const centerY = rect.y + rect.height/2;
     let possibleCovers = document.elementsFromPoint(centerX, centerY);
-    console.log(element);
-    console.log(possibleCovers);
     possibleCovers = possibleCovers.filter(c => {
         // remove self and ace_demo panel
         if (c === element || c.id === 'ace_demo_popup') {
@@ -179,7 +181,6 @@ function isElementUnobscured(element){
 
         return isElementVisuallyUnderTheOther(element, c);
     });
-    console.log(possibleCovers);
     return possibleCovers.length <= 0;
 }
 
@@ -187,16 +188,6 @@ function isElementInViewport(element) {
     const rect = element.getBoundingClientRect();
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
-
-    console.log(element);
-    console.log((
-        rect.top < viewportHeight &&
-        rect.bottom >0 &&
-        rect.left < viewportWidth &&
-        rect.right >0
-    ));
-
-
     return (
         rect.top < viewportHeight &&
         rect.bottom >0 &&

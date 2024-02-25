@@ -153,9 +153,9 @@ function toggleHighlight(newValue){
         const body = document.querySelector('body');
 
         // for testing
-        const spot1 = document.getElementById('spot1');
-        spot1.style.color = "red";
-        spot1.style.opacity = '1';
+        // const spot1 = document.getElementById('spot1');
+        // spot1.style.color = "red";
+        // spot1.style.opacity = '1';
 
         let allInteractive = [];
         interactiveTags.forEach(tag => {
