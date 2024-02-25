@@ -115,6 +115,16 @@ const onMagnifierCheckboxChanged =(checkbox) => {
     checkbox.checked = false;
 }
 
+const onHighlightCheckboxChanged =(checkbox) => {
+    const messageData = {
+        sender: "popup.js",
+        functionName: "toggleHighlight",
+        parameters: {
+            newValue: checkbox.checked
+        }};
+    window.postMessage(messageData, window.location.href);
+}
+
 
 const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, regularSVG, muteSVG) => {
     const initialValue = volumeSliderValue.value

@@ -105,7 +105,7 @@ const regexCursor = /(?<=cursor\s*:\s*)pointer|default(?=\s*[;|}])/;
 
 let injectionCSSRules = [];
 let injectionCSSElement;
-const customizedFontCSSID = "xuexian_ace_demo_font_settings" // TODO 改掉
+const customizedCSSID = "xuexian_ace_demo_customization_settings" // TODO 改掉
 let currentFontSizeFactor = 1, currentFontFamily;
 let isFontSettingOn = true; // TODO get & set through pop-up setting
 let isCursorSettingOn = true;
@@ -215,13 +215,13 @@ const collectAllFeatureRelatedCSS =() => {
 
 const initializeFeatureRelatedStuff =() =>{
     if(injectionCSSElement === undefined){
-        const temp = document.getElementById(customizedFontCSSID);
+        const temp = document.getElementById(customizedCSSID);
         if(temp !== null){
             injectionCSSElement = temp;
         }
         else{
             injectionCSSElement = document.createElement('style');
-            injectionCSSElement.id = customizedFontCSSID;
+            injectionCSSElement.id = customizedCSSID;
         }
     }
     collectAllFeatureRelatedCSS();
@@ -407,6 +407,7 @@ const initialize = () => {
         loadHTML(windowDiv);
         applyScripts(root);
         initializeFeatureRelatedStuff();
+        injectHighlightCSS();
         window.addEventListener("message", onMessageRecieved);
     }
 }
