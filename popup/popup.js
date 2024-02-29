@@ -150,9 +150,7 @@ const setFontFamilyDropDown = () => {
             window.postMessage(messageData, window.location.href);
 
             // close dropdown menu
-            if (!dropdown.classList.contains('hide')) {
-                dropdown.classList.add('hide');
-            }
+            dropdown.classList.toggle('hide');
         }
     }
 };
@@ -169,9 +167,7 @@ const HideDropDown =(clickEvent) =>{
     // close dropdown if blank area is clicked
     if(targetDataID !== 'font_family_dropdown_btn'){
         const dropdown = getElementByDataID('font_family_dropdown');
-        if (!dropdown.classList.contains('hide')){
-            dropdown.classList.add('hide');
-        }
+        dropdown.classList.toggle('hide');
     }
 };
 
