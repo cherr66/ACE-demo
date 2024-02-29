@@ -25,7 +25,6 @@ const createDOMRoot = () => {
     // TODO change id to customized tag, prefix SHOULD BE global variable
     const popupDiv = document.createElement('div');
     popupDiv.setAttribute('id', rootID);
-    popupDiv.setAttribute('data-html2canvas-ignore', "true");
     document.documentElement.appendChild(popupDiv);
     return popupDiv.attachShadow({mode: 'open'});
 }
@@ -401,7 +400,7 @@ function onExtensionOpen(){
 const initialize = () => {
     root = document.getElementById(rootID);
     if(root === null){
-        root = createDOMRoot();
+        root = createDOMRoot(); // root is shadowRoot
         applyStyleSheet(root);
         const windowDiv = createPopupWindowDiv(root);
         loadHTML(windowDiv);

@@ -83,7 +83,7 @@ const collectFeatureControls =() => {
 
 const setSliderFill = (element) =>{
     const value = (element.value-element.min)/(element.max-element.min)*100
-    element.style.background = 'linear-gradient(to right, #0b6ae0 0%, #0b6ae0 ' + value + '%, #d3d3d3 ' + value + '%, #d3d3d3 100%)';
+    element.style.background = 'linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ' + value + '%, var(--color-base-light) ' + value + '%, var(--color-base-light) 100%)';
 };
 
 const setFontSizeSliderListener = () => {
