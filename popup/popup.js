@@ -5,10 +5,86 @@
 let rootElem;
 const getElementByDataID = (id) => rootElem.querySelector(`[data-ace-id="${id}"]`);
 
+let isSettingModeOn = false;
+let isFeatureOn = [];
+let featureControlElements = [];
+const alternateHeader =() => {
+    const settingHeader = getElementByDataID('header_quit_setting_container');
+    settingHeader.classList.toggle('hide');
+    const regularHeaderTitle = getElementByDataID('header_title');
+    regularHeaderTitle.classList.toggle('hide');
+    const settingBtn = getElementByDataID('header_setting_btn');
+    settingBtn.classList.toggle('hide');
+}
+
+const onSettingBtnClicked =() =>{
+    if(isSettingModeOn){
+        return;
+    }
+
+    // prepare UI for entering setting mode
+    alternateHeader();
+    featureControlElements.forEach(elem => {
+        elem.disabled = true; // disable controls' interactivity
+    });
+
+    const checkboxContainers = rootElem.querySelectorAll('.feature_checkbox_container');
+    // isFeatureOn keep a record of visibility state of each feature control in regular mode
+    if(checkboxContainers.length !== isFeatureOn.length){
+        isFeatureOn.length = 0;
+        checkboxContainers.forEach(c => {
+            c.parentElement.classList.contains('hide')?
+                isFeatureOn.push(false):
+                isFeatureOn.push(true);
+        });
+    }
+
+    // set checkbox state according to isFeatureON(state of each control)
+    for(let i = 0; i < checkboxContainers.length; i++){
+        const checkbox = checkboxContainers[i].querySelector('input[type="checkbox"]')
+        checkbox.checked = isFeatureOn[i]; // set checked value accordingly
+        checkboxContainers[i].classList.toggle('hide'); // show all checkboxes
+        checkboxContainers[i].parentElement.classList.remove('hide'); // show all controls
+    }
+    isSettingModeOn = !isSettingModeOn;
+}
+
+const quitSettingMode =() =>{
+    if(!isSettingModeOn){
+        return;
+    }
+
+    const checkboxContainers = rootElem.querySelectorAll('.feature_checkbox_container');
+    for(let i = 0; i < checkboxContainers.length; i++) {
+        const checkbox = checkboxContainers[i].querySelector('input[type="checkbox"]')
+        isFeatureOn[i] = checkbox.checked;
+        // hide un-selected features
+        isFeatureOn[i]?
+            checkboxContainers[i].parentElement.classList.remove('hide'):
+            checkboxContainers[i].parentElement.classList.add('hide');
+    }
+
+    // hide all checkboxes, reactive buttons/inputs, enter regular mode
+    for(let i = 0; i < checkboxContainers.length; i++){
+        checkboxContainers[i].classList.toggle('hide');
+    }
+    featureControlElements.forEach(elem => { elem.disabled = false; });
+    isSettingModeOn = !isSettingModeOn;
+    alternateHeader();
+}
+
+const collectFeatureControls =() => {
+    const controlContainers = rootElem.querySelectorAll('.feature_control_container');
+    for(let i = 0; i< controlContainers.length; i++){
+        controlContainers[i].querySelectorAll('input').forEach(i => featureControlElements.push(i));
+        controlContainers[i].querySelectorAll('button').forEach(b => featureControlElements.push(b));
+    }
+}
+
 const setSliderFill = (element) =>{
     const value = (element.value-element.min)/(element.max-element.min)*100
     element.style.background = 'linear-gradient(to right, #0b6ae0 0%, #0b6ae0 ' + value + '%, #d3d3d3 ' + value + '%, #d3d3d3 100%)';
-}
+};
 
 const setFontSizeSliderListener = () => {
     const fontSizeSliderValue = getElementByDataID('font_size_slider_value');
@@ -28,7 +104,7 @@ const setFontSizeSliderListener = () => {
             }};
         window.postMessage(messageData, window.location.href);
     }
-}
+};
 
 
 const setCursorSizeSliderListener = () => {
@@ -46,18 +122,13 @@ const setCursorSizeSliderListener = () => {
             }};
         window.postMessage(messageData, window.location.href);
     }
-}
+};
 
 const setFontFamilyDropDown = () => {
     const dropdownBtn = getElementByDataID('font_family_dropdown_btn');
     const dropdown = getElementByDataID('font_family_dropdown');
     for(let i = 0; i < dropdown.children.length; i++){
         const childElem = dropdown.children[i];
-
-        // apply css
-        // if(i === 0){childElem.classList.add('first');}
-        // else if(i === dropdown.children.length - 1){childElem.classList.add('last');}
-        // else {childElem.classList.add('divider');}
 
         // set onclick function for each option
         childElem.onclick = function (){
@@ -84,14 +155,14 @@ const setFontFamilyDropDown = () => {
             }
         }
     }
-
-    // for (const childElem of dropdown.children){
-    // }
-}
+};
 
 const showDropdown =() => {
+    if(isSettingModeOn){
+        return;
+    }
     getElementByDataID("font_family_dropdown").classList.toggle("hide");
-}
+};
 
 const HideDropDown =(clickEvent) =>{
     const targetDataID = clickEvent.target.getAttribute('data-ace-id');
@@ -102,9 +173,12 @@ const HideDropDown =(clickEvent) =>{
             dropdown.classList.add('hide');
         }
     }
-}
+};
 
 const onMagnifierCheckboxChanged =(checkbox) => {
+    if(isSettingModeOn){
+        return;
+    }
     const messageData = {
         sender: "popup.js",
         functionName: "toggleMagnifier",
@@ -113,9 +187,13 @@ const onMagnifierCheckboxChanged =(checkbox) => {
         }};
     window.postMessage(messageData, window.location.href);
     checkbox.checked = false;
-}
+};
 
 const onHighlightCheckboxChanged =(checkbox) => {
+    if(isSettingModeOn){
+        return;
+    }
+
     const messageData = {
         sender: "popup.js",
         functionName: "toggleHighlight",
@@ -123,8 +201,7 @@ const onHighlightCheckboxChanged =(checkbox) => {
             newValue: checkbox.checked
         }};
     window.postMessage(messageData, window.location.href);
-}
-
+};
 
 const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, regularSVG, muteSVG) => {
     const initialValue = volumeSliderValue.value
@@ -146,7 +223,7 @@ const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, reg
         }
         setSliderFill(this);
     }
-}
+};
 
 const setNarrationVolumeSliderListener = () => {
     const narrationVolumeBtn = getElementByDataID('narration_volume_button');
@@ -156,7 +233,7 @@ const setNarrationVolumeSliderListener = () => {
     const muteSVG = getElementByDataID('narration_volume_mute_svg');
     setVolumeSliderListener(narrationVolumeBtn, narrationVolumeSlider, narrationVolumeSliderValue,
         regularSVG, muteSVG);
-}
+};
 
 const setGameVolumeSliderListener = () => {
     const gameVolumeBtn = getElementByDataID('game_volume_button');
@@ -166,7 +243,7 @@ const setGameVolumeSliderListener = () => {
     const muteSVG = getElementByDataID('game_volume_mute_svg');
     setVolumeSliderListener(gameVolumeBtn, gameVolumeSlider, gameVolumeSliderValue,
         regularSVG, muteSVG);
-}
+};
 
 const setSoundEffectVolumeSliderListener = () => {
     const soundEffectVolumeBtn = getElementByDataID('sound_effect_volume_button');
@@ -176,7 +253,7 @@ const setSoundEffectVolumeSliderListener = () => {
     const muteSVG = getElementByDataID('sound_effect_volume_mute_svg');
     setVolumeSliderListener(soundEffectVolumeBtn, soundEffectVolumeSlider, soundEffectVolumeSliderValue,
         regularSVG, muteSVG);
-}
+};
 
 const initialize = () => {
     setFontSizeSliderListener();
@@ -185,7 +262,8 @@ const initialize = () => {
     setNarrationVolumeSliderListener();
     setGameVolumeSliderListener();
     setSoundEffectVolumeSliderListener();
-}
+    collectFeatureControls();
+};
 
 
 const makeDraggableHeader =(header) => {
@@ -232,7 +310,7 @@ const makeDraggableHeader =(header) => {
         offsetX = offsetY = 0;
         isDragging = false;
     }
-}
+};
 
 
 
@@ -261,17 +339,19 @@ if(ace_demo_popup !== null){
 }
 
 const hidePopup =() => {
+    if(isSettingModeOn){
+        quitSettingMode();
+    }
     if(ace_demo_popup !== null){
         ace_demo_popup.style.display = 'none';
     }
-}
+};
 
-
-// let rootObserver = new MutationObserver((mutationsList, observer) => {
-//     for (let mutation of mutationsList) {
-//         console.log(mutation.target + " " + mutation.addedNodes);
-//     }
-// });
-// rootObserver.observe(rootNode.shadowRoot, { childList: true });
-
-
+window.addEventListener("message", (event)=>{
+    if(!window.location.href.startsWith(event.origin)){
+        return;
+    }
+    if(event.data.code === "QUIT_SETTING"){
+        hidePopup();
+    }
+});

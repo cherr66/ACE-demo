@@ -39,7 +39,8 @@ header button:hover svg path{
 }
 
 .menu_body{
-    height: 400px;
+    max-height: 400px;
+    height: fit-content;
     overflow-y: scroll;
 }
 
@@ -55,12 +56,16 @@ header button:hover svg path{
     display: flex;
     justify-content: start;
     flex-shrink: 0;
+    height: 65px;
 }
 .row_right {
     align-items: inherit;
     display: flex;
     justify-content: flex-end;
     flex-shrink: 0;
+}
+.row_left h3{
+    margin-left: 10px;
 }
 
 .row_holder{
@@ -80,6 +85,12 @@ header button:hover svg path{
 .row_divider {
     border-bottom: 1px solid #ccc;
     width: 100%;
+}
+.row.hide + .row_divider{
+    display: none;
+}
+.row:not(.hide) + .row_divider:last-child {
+    display: none;
 }
 
 /*.hidden_item{*/
@@ -131,7 +142,7 @@ header button:hover svg path{
 }
 .volume_slider_container span{
     min-width: 30px;
-    text-align: right;
+    text-align: center;
 }
 .volume_slider_container button{
     border: none;
@@ -191,7 +202,7 @@ label.switch input {
 }
 .switch .toggle:after{
     position: absolute;
-    font-size: 12px; /* Adjust the font size to your preference */
+    font-size: 12px;
     font-weight: bold;
     color: white;
     top: 6px;
@@ -285,7 +296,7 @@ label.switch input {
     right: 10px;
     width: 0;
     height: 0;
-    border: 6px solid transparent;
+    border: 6px solid;
     border-color: #0b6ae0 transparent transparent transparent;
 }
 .hide + .dropdown_button:hover:after{
@@ -299,7 +310,7 @@ label.switch input {
     right: 10px;
     width: 0;
     height: 0;
-    border: 6px solid transparent;
+    border: 6px solid;
     border-color: transparent transparent #fff transparent;
 }
 
@@ -307,3 +318,116 @@ label.switch input {
     display: none;
 }
 .show{}
+
+.round_check_box{
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.round_check_box_label{
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    user-select: none;
+}
+.round_check_box_label::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+}
+.round_check_box_label:has(> .round_check_box:checked)::before{
+    animation: gray_to_blue 0.8s forwards;
+}
+.round_check_box_label:has(> .round_check_box:checked)::after{
+    content: "\2713"; /* Unicode character for checkmark */
+    display: block;
+    position: absolute;
+    top: -16px;
+    left: 3px;
+    font-size: 32px;
+    color: #2196F3;
+    animation: fade_in 0.8s forwards;
+}
+@keyframes fade_in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@keyframes gray_to_blue {
+    0%{
+        border-color: #ccc;
+    }
+    100%{
+        border-color: #2196F3;
+    }
+}
+
+
+.feature_control_container{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    justify-items: end;
+
+    /*min-width: 90%;*/
+
+}
+.feature_checkbox_container.hide + .feature_control_container{
+    min-width: 100%;
+    /*animation: control_slide_back 0.8s both;*/
+}
+.feature_checkbox_container:not(.hide) + .feature_control_container {
+    min-width: 90%;
+    animation: control_slide_to_right 0.8s both;
+}
+.feature_checkbox_container.hide + .feature_control_container .mask{
+    display: none;
+}
+/*@keyframes control_slide_back {*/
+/*    0%{*/
+/*        width: 90%;*/
+/*    }*/
+/*    100%{*/
+/*        width: 100%;*/
+/*    }*/
+/*}*/
+@keyframes control_slide_to_right {
+    0%{
+        width: 93%;
+    }
+    100%{
+        width: 90%;
+    }
+}
+
+
+.mask_scope{
+    position: relative;
+}
+.mask {
+    position: absolute;
+    top: -15px;
+    left: 0;
+    width: 100%;
+    height: calc(30px + 100%);
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.5); /* White background with 50% opacity */
+}
+/*.mask ~ .slider:hover::-webkit-slider-thumb {*/
+/*    background: #0b6ae0;*/
+/*}*/
+/*.mask ~ .slider:hover::-moz-range-thumb {*/
+/*    background: #0b6ae0;*/
+/*}*/

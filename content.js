@@ -48,7 +48,7 @@ const createPopupWindowDiv = (parentNode) =>{
         'position:fixed; ' +
         'top: 100px; left: 100px; ' +
         'width: 400px; ' +
-        'height: 480px; ' +
+        'max-height: 480px; ' +
         'z-index: 2147483650; ' +
         'border: none; ' +
         'background: white; ' +
@@ -287,8 +287,8 @@ function togglePopup(){
         root.style.display = '';
         window.addEventListener("message", onMessageRecieved);
     }else{
-        root.setAttribute('style', 'display:none;');
         window.removeEventListener("message", onMessageRecieved);
+        window.postMessage({code:"QUIT_SETTING"}, window.location.href);
     }
 }
 
