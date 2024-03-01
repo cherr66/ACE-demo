@@ -131,7 +131,8 @@ const setFontFamilyDropDown = () => {
         const childElem = dropdown.children[i];
 
         // set onclick function for each option
-        childElem.onclick = function (){
+        childElem.onclick = function (event){
+            event.preventDefault();
             dropdownBtn.innerHTML = childElem.innerHTML;
 
             // set visual cue for selected option
