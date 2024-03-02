@@ -95,5 +95,7 @@ function setupMagnifier(request, sender){
     function closeMagnifier() {
         magnifierRoot.remove();
         togglePopup();
+        // set magnifier focused, ease navigation
+        root.shadowRoot.querySelector('[data-ace-id="magnifier_toggle"]').focus();
     }
 }

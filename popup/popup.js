@@ -43,10 +43,20 @@ const onSettingBtnClicked =() =>{
     for(let i = 0; i < checkboxContainers.length; i++){
         const checkbox = checkboxContainers[i].querySelector('input[type="checkbox"]')
         checkbox.checked = isFeatureOn[i]; // set checked value accordingly
+        checkbox.style.ariaChecked = isFeatureOn[i];
+        checkbox.addEventListener('change', setCheckboxAriaChecked);
         checkboxContainers[i].classList.toggle('hide'); // show all checkboxes
         checkboxContainers[i].parentElement.classList.remove('hide'); // show all controls
     }
     isSettingModeOn = !isSettingModeOn;
+
+    // If in setting mode, pressed ESC, quit setting mode
+    document.addEventListener('keydown', function onKeyDown(event) {
+        if (event.key === 'Escape') {
+            quitSettingMode();
+            document.removeEventListener('keydown', onKeyDown);
+        }
+    });
 }
 
 const quitSettingMode =() =>{
@@ -57,6 +67,7 @@ const quitSettingMode =() =>{
     const checkboxContainers = rootElem.querySelectorAll('.feature_checkbox_container');
     for(let i = 0; i < checkboxContainers.length; i++) {
         const checkbox = checkboxContainers[i].querySelector('input[type="checkbox"]')
+        checkbox.removeEventListener('change', setCheckboxAriaChecked);
         isFeatureOn[i] = checkbox.checked;
         // hide un-selected features
         isFeatureOn[i]?
@@ -71,6 +82,10 @@ const quitSettingMode =() =>{
     featureControlElements.forEach(elem => { elem.disabled = false; });
     isSettingModeOn = !isSettingModeOn;
     alternateHeader();
+}
+
+function setCheckboxAriaChecked(e){
+    e.target.setAttribute('aria-checked', e.target.checked);
 }
 
 const collectFeatureControls =() => {
@@ -90,7 +105,9 @@ const setFontSizeSliderListener = () => {
     const fontSizeSliderValue = getElementByDataID('font_size_slider_value');
     const fontSizeSlider = getElementByDataID('font_size_slider');
     fontSizeSlider.oninput = function() {
-        fontSizeSliderValue.innerHTML = `${(this.value * 100).toFixed(0)}%`;
+        const value = `${(this.value * 100).toFixed(0)}%`;
+        fontSizeSliderValue.innerHTML = value;
+        fontSizeSlider.setAttribute('aria-valuenow', value);
         setSliderFill(this);
 
         // TODO if popup.js is referred by default_popup, chrome.runtime is defined, use chrome.runtime.sendMessage
@@ -108,10 +125,13 @@ const setFontSizeSliderListener = () => {
 
 
 const setCursorSizeSliderListener = () => {
-    const fontSizeSliderValue = getElementByDataID('cursor_size_slider_value');
-    const fontSizeSlider = getElementByDataID('cursor_size_slider');
-    fontSizeSlider.oninput = function() {
-        fontSizeSliderValue.innerHTML = `${(this.value * 100).toFixed(0)}%`;
+    const cursorSizeSliderValue = getElementByDataID('cursor_size_slider_value');
+    const cursorSizeSlider = getElementByDataID('cursor_size_slider');
+    cursorSizeSlider.oninput = function() {
+        const value = `${(this.value * 100).toFixed(0)}%`;
+        cursorSizeSliderValue.innerHTML = value;
+        cursorSizeSlider.setAttribute('aria-valuenow', value);
+
         setSliderFill(this);
 
         const messageData = {
@@ -129,6 +149,7 @@ const setFontFamilyDropDown = () => {
     const dropdown = getElementByDataID('font_family_dropdown');
     for(let i = 0; i < dropdown.children.length; i++){
         const childElem = dropdown.children[i];
+        childElem.setAttribute('aria-selected', childElem.classList.contains('selected').toString());
 
         // set onclick function for each option
         childElem.onclick = function (event){
@@ -138,9 +159,12 @@ const setFontFamilyDropDown = () => {
             // set visual cue for selected option
             const selectedElems = dropdown.getElementsByClassName('selected')
             if(selectedElems !== null){
+                selectedElems[0].setAttribute('aria-selected', 'false');
                 selectedElems[0].classList.remove('selected');
             }
             childElem.classList.add('selected');
+            childElem.setAttribute('aria-selected', 'true');
+            dropdown.setAttribute('aria-activedescendant', childElem.id);
 
             const messageData = {
                 sender: "popup.js",
@@ -153,16 +177,59 @@ const setFontFamilyDropDown = () => {
             // close dropdown menu
             if (!dropdown.classList.contains('hide')) {
                 dropdown.classList.add('hide');
+                // remove arrow keys event listener
+                rootElem.removeEventListener('keydown', onArrowKeysDownOnDropdown);
             }
         }
     }
 };
 
-const showDropdown =() => {
+function onArrowKeysDownOnDropdown(event) {
+    const dropdownBtn = getElementByDataID('font_family_dropdown_btn');
+    if(event.target !== dropdownBtn ||
+        (event.key !== 'ArrowUp' && event.key !== 'ArrowDown' && event.key !== 'Enter')){
+        return;
+    }
+
+    const dropdown = getElementByDataID('font_family_dropdown');
+    // navigation on dropdown
+    if(event.key === 'ArrowUp' || event.key === 'ArrowDown'){
+        event.preventDefault();
+        const oldSelectedOption = rootElem.getElementById(dropdown.getAttribute('aria-activedescendant'));
+        let newSelectedOption;
+        if (event.key === 'ArrowUp') {
+            newSelectedOption = oldSelectedOption.previousElementSibling;
+        }else if(event.key === 'ArrowDown'){
+            newSelectedOption = oldSelectedOption.nextElementSibling;
+        }
+        if(newSelectedOption !== null && oldSelectedOption !== null
+            && newSelectedOption !== oldSelectedOption){
+            oldSelectedOption.setAttribute('aria-selected', 'false');
+            oldSelectedOption.classList.remove('selected');
+            newSelectedOption.setAttribute('aria-selected', 'true');
+            newSelectedOption.classList.add('selected');
+            dropdown.setAttribute('aria-activedescendant', newSelectedOption.id);
+        }
+    }
+
+    // Confirm choice
+    if(event.key === 'Enter'){
+        dropdownBtn.innerHTML = rootElem.getElementById(dropdown.getAttribute('aria-activedescendant')).innerHTML;
+    }
+}
+
+const toggleDropdown =() => {
     if(isSettingModeOn){
         return;
     }
-    getElementByDataID("font_family_dropdown").classList.toggle("hide");
+    const dropdown = getElementByDataID('font_family_dropdown');
+    const containHide = dropdown.classList.toggle("hide");
+    getElementByDataID("font_family_dropdown_btn").setAttribute('aria-expanded', String(!containHide));
+
+    // arrow keys event listener
+    if(!containHide){
+        rootElem.addEventListener('keydown', onArrowKeysDownOnDropdown);
+    }
 };
 
 const HideDropDown =(clickEvent) =>{
@@ -173,6 +240,7 @@ const HideDropDown =(clickEvent) =>{
         if (!dropdown.classList.contains('hide')){
             dropdown.classList.add('hide');
         }
+        getElementByDataID("font_family_dropdown_btn").setAttribute('aria-expanded', 'false');
     }
 };
 
@@ -213,7 +281,10 @@ const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, reg
         regularSVG.classList.toggle('hide');
     }
     volumeSlider.oninput = function() {
-        volumeSliderValue.innerHTML = `${(this.value * 1).toFixed(0).toString()}`;
+        const value = `${(this.value * 1).toFixed(0).toString()}`;
+        volumeSliderValue.innerHTML = value;
+        volumeSlider.setAttribute('aria-valuenow', value);
+
         if(this.value > 0){
             muteSVG.classList.add('hide');
             regularSVG.classList.remove('hide');

@@ -233,11 +233,11 @@ label.switch input {
     top: 6px;
 }
 .switch input:checked + .toggle:after{
-    content: 'ON';
+    content: 'ON'/'';
     left: 4px;
 }
 .switch input:not(:checked) + .toggle:after{
-    content: 'OFF';
+    content: 'OFF'/'';
     right: 4px;
 }
 .switch input:checked + .toggle {
@@ -372,7 +372,7 @@ label.switch input {
     animation: gray_to_blue 0.8s forwards;
 }
 .round_check_box_label:has(> .round_check_box:checked)::after{
-    content: "\2713"; /* Unicode character for checkmark */
+    content: "\2713"/""; /* Unicode character for checkmark */
     display: block;
     position: absolute;
     top: -16px;

@@ -56,6 +56,10 @@ const createPopupWindowDiv = (parentNode) =>{
         'border-radius: 10px; ' +
         'cursor: default;!important; '
     );
+    // set proper aria attributes
+    windowDiv.setAttribute('role', "region");
+    windowDiv.setAttribute('aria-roledescription', "accessibility control hub");
+    windowDiv.setAttribute('tabindex', '0');
     mainDivInShadow.appendChild(windowDiv);
     return windowDiv;
 }
