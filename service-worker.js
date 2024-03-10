@@ -38,7 +38,7 @@ chrome.webNavigation.onCompleted.addListener(async function(details)  {
     } else if(targetGameURLs.some((urlPattern) => details.url.match(urlPattern))){
         await chrome.scripting.executeScript({
             target: {tabId: details.tabId},
-            files: ['content-utils.js', 'content-magnifier.js', 'content-highlight.js', 'content.js']
+            files: ['content-utils.js', 'content-magnifier.js', 'content-interactiveHints.js', 'content.js']
         });
     }
 });

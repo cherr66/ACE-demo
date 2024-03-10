@@ -163,6 +163,9 @@ function isElementUnobscured(element){
     const centerX = rect.x + rect.width/2;
     const centerY = rect.y + rect.height/2;
     let possibleCovers = document.elementsFromPoint(centerX, centerY);
+    // if(element.id === 'spot1'){
+    //     console.log(possibleCovers);
+    // }
     possibleCovers = possibleCovers.filter(c => {
         // remove self and ace_demo panel
         if (c === element || c.id === 'ace_demo_popup') {
@@ -181,6 +184,9 @@ function isElementUnobscured(element){
 
         return isElementVisuallyUnderTheOther(element, c);
     });
+    // if(element.id === 'spot1'){
+    //     console.log(possibleCovers);
+    // }
     return possibleCovers.length <= 0;
 }
 
@@ -189,10 +195,10 @@ function isElementInViewport(element) {
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
     return (
-        rect.top < viewportHeight &&
-        rect.bottom >0 &&
-        rect.left < viewportWidth &&
-        rect.right >0
+        rect.top < viewportHeight - 5 &&
+        rect.bottom > 5 &&
+        rect.left < viewportWidth -5 &&
+        rect.right > 5
     );
 }
 
@@ -202,10 +208,8 @@ function isElementPhysicallyVisible(element){
     let tmp = element;
     while(tmp !== null && tmp.tagName.toLowerCase() !== 'body'){
         const computedStyle = window.getComputedStyle(tmp);
-
         if(computedStyle.display === 'none'
             || computedStyle.visibility === 'hidden'
-            // || computedStyle.opacity === '0'
             || computedStyle.pointerEvents === 'none'
         ){
             return false;
@@ -215,13 +219,92 @@ function isElementPhysicallyVisible(element){
     return isElementInViewport(element) && isElementUnobscured(element);
 }
 
+const querySelectorAllActive =(elem, query) => {
+    return querySelectorAllVisible(elem, query).filter(e => e.disabled === false);
+}
+
 // return all physically visible descendant elements
 const querySelectorAllVisible =(elem, query) => {
     if(!(elem instanceof HTMLElement)){
-        return;
+        return [];
     }
     return Array.from(elem.querySelectorAll(query)).filter(e => isElementPhysicallyVisible(e));
 }
+
+
+function setRoleBasedOnTag(element) {
+    const elementType = element.tagName.toLowerCase();
+
+    const roleMap = {
+        'button': 'button',
+        'a': 'link',
+        'input[type="submit"]': 'button'
+    };
+    if (roleMap.hasOwnProperty(elementType)) {
+        element.setAttribute('role', roleMap[elementType]);
+    }
+}
+
+if (!RegExp.escape) {
+    RegExp.escape = function(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    };
+}
+
+function isButtonContentSemantic(button) {
+    let innerHTML = button.innerHTML;
+    const disallowedContent = [
+        '',             // Empty content
+        '&nbsp;',      // Non-breaking space
+        '<br>',        // Line break
+        '<br />',      // Line break (self-closing)
+        '<div></div>', // Empty div
+        '<span></span>', // Empty span
+        '&',            // Ampersand
+        '#',            // Hash symbol
+        '*',            // Asterisk
+        '@',            // At symbol
+        '$',            // Dollar sign
+        '%',            // Percent sign
+        '^',            // Caret
+        '`',            // Backtick
+        '~',            // Tilde
+        '|',            // Pipe
+        '<',            // Less than
+        '>',            // Greater than
+        '{',            // Opening curly brace
+        '}',            // Closing curly brace
+        '[',            // Opening square bracket
+        ']',            // Closing square bracket
+        '(',            // Opening parenthesis
+        ')',            // Closing parenthesis
+        '/',            // Forward slash
+        '\\',           // Backward slash
+        '+',            // Plus
+        '=',            // Equal sign
+        '-',            // Hyphen-minus
+        '_',            // Underscore
+        ':',            // Colon
+        ';',            // Semicolon
+        '"',            // Double quote
+        "'",            // Single quote
+        '.',            // Period
+        ',',            // Comma
+        '!',            // Exclamation mark
+        '?',            // Question mark
+        '&amp;',       // HTML entity for ampersand
+        '&lt;',        // HTML entity for less than
+        '&gt;',        // HTML entity for greater than
+        '&quot;',      // HTML entity for double quote
+        '&apos;',      // HTML entity for single quote
+    ];
+
+    disallowedContent.forEach(content => {
+        innerHTML = innerHTML.replace(new RegExp(RegExp.escape(content), 'gi'), '');
+    });
+    return innerHTML.trim().length > 0;
+}
+
 
 
 let myQueryHelper = (elem, query, results) => {
