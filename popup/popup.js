@@ -214,7 +214,16 @@ function onArrowKeysDownOnDropdown(event) {
 
     // Confirm choice
     if(event.key === 'Enter'){
-        dropdownBtn.innerHTML = rootElem.getElementById(dropdown.getAttribute('aria-activedescendant')).innerHTML;
+        const newFontFamily = rootElem.getElementById(dropdown.getAttribute('aria-activedescendant')).innerHTML;
+        dropdownBtn.innerHTML = newFontFamily;
+        // send message
+        const messageData = {
+            sender: "popup.js",
+            functionName: "changeFontFamily",
+            parameters: {
+                newValue: newFontFamily,
+            }};
+        window.postMessage(messageData, window.location.href);
     }
 }
 
