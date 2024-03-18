@@ -359,8 +359,38 @@ const setNarrationVolumeSliderListener = () => {
     const narrationVolumeSliderValue = getElementByDataID('narration_volume_value');
     const regularSVG = getElementByDataID('narration_volume_svg');
     const muteSVG = getElementByDataID('narration_volume_mute_svg');
+
+    function postVolumeMessage(value){
+        const messageData = {
+            sender: "popup.js",
+            functionName: "setNarrationVolume",
+            parameters: {
+                newValue: value,
+            }};
+        window.postMessage(messageData, window.location.href);
+    }
+    narrationVolumeBtn.addEventListener('click', () => {
+        // This callback is fired after the other registered function, so mute value is real-time
+        if(muteSVG.classList.contains('hide')){
+            postVolumeMessage(0);
+        }else{
+            postVolumeMessage(narrationVolumeSlider.value);
+        }
+    });
+    narrationVolumeSlider.addEventListener('input', () => {
+        postVolumeMessage(narrationVolumeSlider.value);
+    });
     setVolumeSliderListener(narrationVolumeBtn, narrationVolumeSlider, narrationVolumeSliderValue,
         regularSVG, muteSVG);
+
+
+    const initialVolume = 50;
+    muteSVG.classList.add('hide');
+    regularSVG.classList.remove('hide');
+    narrationVolumeSlider.value = initialVolume;
+    narrationVolumeSliderValue.innerHTML = initialVolume.toString();
+    setSliderFill(narrationVolumeSlider);
+    postVolumeMessage(initialVolume); //make sure narrationVolume in content-utils.js be consistent
 };
 
 const setGameVolumeSliderListener = () => {
@@ -388,7 +418,7 @@ const initialize = () => {
     setCursorSizeSliderListener();
     setFontFamilyDropDown();
     setNarrationVolumeSliderListener();
-    setGameVolumeSliderListener();
+    // setGameVolumeSliderListener();
     setSoundEffectVolumeSliderListener();
     collectFeatureControls();
 };

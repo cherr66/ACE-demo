@@ -346,6 +346,8 @@ function getClosestElementAndDistance(elements, cursorX, cursorY) {
 }
 
 let speechCache; //avoid multiple speech with same content
+let narrationVolume = 0.5; // 0 - 1
+// let utteranceBuffer = [];
 function speak(text, assertive = true) {
     if(speechCache === text){
         return;
@@ -354,12 +356,32 @@ function speak(text, assertive = true) {
         speechSynthesis.cancel(); // cancel any existing speech
     }
 
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = text;
-    msg.lang = 'en-US';
-    msg.volume = 0.5; // todo 音量控制
-    speechSynthesis.speak(msg);
+    const utterance = new SpeechSynthesisUtterance();
+    utterance.text = text;
+    utterance.lang = 'en-US';
+    utterance.volume = narrationVolume;
+    speechSynthesis.speak(utterance);
+
     speechCache = text;
+    // utterance.onend = function (event){
+    //     //remove all previous utterances as their onend event won't be fired if speechSynthesis cancels
+    //     const index = utteranceBuffer.indexOf(utterance);
+    //     if (index !== -1) {
+    //         utteranceBuffer.splice(0, index + 1);
+    //     }
+    // }
+    // utteranceBuffer.push(utterance);
+}
+
+function setNarrationVolume(newValue){
+    if (isNaN(parseInt(newValue))) {
+        return;
+    }
+    narrationVolume = newValue / 100;
+    // // propagate changes to utterance volume
+    // utteranceBuffer.forEach(u => {
+    //     u.volume = narrationVolume; //However, this won't affect volume of ongoing speech
+    // });
 }
 
 function clearSpeech(){
