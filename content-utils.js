@@ -345,9 +345,9 @@ function getClosestElementAndDistance(elements, cursorX, cursorY) {
     return { closestElement: closestElement, distance: minDistance };
 }
 
-let speechHistory; //avoid multiple speech with same content
+let speechCache; //avoid multiple speech with same content
 function speak(text, assertive = true) {
-    if(speechHistory === text){
+    if(speechCache === text){
         return;
     }
     if(assertive){
@@ -359,7 +359,12 @@ function speak(text, assertive = true) {
     msg.lang = 'en-US';
     msg.volume = 0.5; // todo 音量控制
     speechSynthesis.speak(msg);
-    speechHistory = text;
+    speechCache = text;
+}
+
+function clearSpeech(){
+    speechSynthesis.cancel();
+    speechCache = '';
 }
 
 // gather all text content under a HTML element

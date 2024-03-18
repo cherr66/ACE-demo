@@ -293,6 +293,10 @@ const onNarrationCheckboxChanged =(checkbox) => {
             newValue: checkbox.checked
         }};
     window.postMessage(messageData, window.location.href);
+
+    // if(checkbox.checked && getElementByDataID('ARIA_optimization_checkbox').checked){
+    //     alert('It is not recommended to use Narration and other Screen Readers at the same time');
+    // }
 };
 
 const onARIAOptimizationCheckboxChanged =(checkbox) => {

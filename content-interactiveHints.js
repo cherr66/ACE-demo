@@ -1,8 +1,9 @@
 let interactiveElements = [];
 let hasInteractObservation = false;
-let isARIAOptimizationOn = false;
 let isHighlightOn = false;
+let isNarrationOn = false;
 let isSonificationOn = false;
+let isARIAOptimizationOn = false;
 let isBinauralSound = true;
 const interactiveTags = ['button', 'a', 'input[type="submit"]'];
 function isInteractiveNode(node) {
@@ -12,7 +13,6 @@ function isInteractiveNode(node) {
     return node.tagName.toLowerCase() === 'button' || node.tagName.toLowerCase() === 'a'
         || (node.tagName.toLowerCase() === 'input' && node.getAttribute('type') === 'submit');
 }
-
 
 const interactiveElementsObserver = new MutationObserver(async mutationsList => {
     for (let mutation of mutationsList) {
@@ -193,6 +193,21 @@ function toggleHighlight(newValue){
         }
         highlightDIVs.length = 0;
         stopInteractObservation();
+    }
+}
+
+function toggleNarration(newValue){
+    isNarrationOn = newValue;
+    if(newValue){
+        narrateDOMContent();
+
+        const config = {
+            childList: true, subtree: true , attributes: true
+        };
+        narrationObserver.observe(document.body, config);
+    }else{
+        clearSpeech();
+        narrationObserver.disconnect();
     }
 }
 
@@ -417,25 +432,23 @@ function toggleSonification(newValue){
 }
 
 
-
-const TTSObserver = new MutationObserver(async mutationsList => {
-    const text = gatherTextContent(document.body);
-    console.log(text);
-    speak(text);
+/**
+ * Text to speech - narration
+ */
+const narrationObserver = new MutationObserver(async mutationsList => {
+    narrateDOMContent();
 });
-function testTTS(){
+
+function narrateDOMContent(){
     const text = gatherTextContent(document.body);
     console.log(text);
     speak(text);
-
-    const config = {
-        childList: true, subtree: true , attributes: true
-    };
-    TTSObserver.observe(document.body, config);
 }
 
 
-
+/**
+ * ARIA optimization
+ */
 // get semantic description from class name, id, etc of interactive elements
 function extractSemanticDescription(element){
     if(!element){
@@ -546,7 +559,9 @@ function injectARIAHidden(interactiveElem){
 }
 
 
-
+/**
+ * highlight
+ */
 const highlightBorderWidth = 4;
 const highlightPadding = 1;
 // TODO change name
