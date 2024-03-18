@@ -383,7 +383,6 @@ const setNarrationVolumeSliderListener = () => {
     setVolumeSliderListener(narrationVolumeBtn, narrationVolumeSlider, narrationVolumeSliderValue,
         regularSVG, muteSVG);
 
-
     const initialVolume = 50;
     muteSVG.classList.add('hide');
     regularSVG.classList.remove('hide');
@@ -403,13 +402,13 @@ const setGameVolumeSliderListener = () => {
         regularSVG, muteSVG);
 };
 
-const setSoundEffectVolumeSliderListener = () => {
-    const soundEffectVolumeBtn = getElementByDataID('sound_effect_volume_button');
-    const soundEffectVolumeSlider = getElementByDataID('sound_effect_volume_slider');
-    const soundEffectVolumeSliderValue = getElementByDataID('sound_effect_volume_value');
-    const regularSVG = getElementByDataID('sound_effect_volume_svg');
-    const muteSVG = getElementByDataID('sound_effect_volume_mute_svg');
-    setVolumeSliderListener(soundEffectVolumeBtn, soundEffectVolumeSlider, soundEffectVolumeSliderValue,
+const setSonificationVolumeSliderListener = () => {
+    const sonificationVolumeBtn = getElementByDataID('sonification_volume_button');
+    const sonificationVolumeSlider = getElementByDataID('sonification_volume_slider');
+    const sonificationVolumeSliderValue = getElementByDataID('sonification_volume_value');
+    const regularSVG = getElementByDataID('sonification_volume_svg');
+    const muteSVG = getElementByDataID('sonification_volume_mute_svg');
+    setVolumeSliderListener(sonificationVolumeBtn, sonificationVolumeSlider, sonificationVolumeSliderValue,
         regularSVG, muteSVG);
 };
 
@@ -419,7 +418,7 @@ const initialize = () => {
     setFontFamilyDropDown();
     setNarrationVolumeSliderListener();
     // setGameVolumeSliderListener();
-    setSoundEffectVolumeSliderListener();
+    // setSonificationVolumeSliderListener();
     collectFeatureControls();
 };
 
