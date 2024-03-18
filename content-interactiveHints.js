@@ -1,6 +1,6 @@
 let interactiveElements = [];
 let hasInteractObservation = false;
-let isNarrationOn = false;
+let isARIAOptimizationOn = false;
 let isHighlightOn = false;
 let isSonificationOn = false;
 let isBinauralSound = true;
@@ -89,7 +89,7 @@ const addInteractiveElement =(interactiveElem, needFilter) =>{
     if(isHighlightOn){
         generateHighlight(interactiveElem);
     }
-    if(isNarrationOn){
+    if(isARIAOptimizationOn){
         injectARIAProperties(interactiveElem);
     }
 
@@ -111,7 +111,7 @@ const removeInteractiveElement =(interactiveElem, needGather = true) =>{
     if(isHighlightOn){
         removeHighlight(index);
     }
-    if(isNarrationOn){
+    if(isARIAOptimizationOn){
         injectARIAHidden(interactiveElem);
     }
     interactiveElements.splice(index, 1);
@@ -169,7 +169,7 @@ const establishInteractObservation =() =>{
 
 const stopInteractObservation =() =>{
     // If the any related feature is still on, or the observation does not exist, return
-    if(isHighlightOn || isNarrationOn || !hasInteractObservation){
+    if(isHighlightOn || isARIAOptimizationOn || !hasInteractObservation){
         return;
     }
     interactiveElementsObserver.disconnect();
@@ -196,8 +196,8 @@ function toggleHighlight(newValue){
     }
 }
 
-function toggleNarration(newValue){
-    isNarrationOn = newValue;
+function toggleARIAOptimization(newValue){
+    isARIAOptimizationOn = newValue;
     if(newValue){
         if(hasInteractObservation){
             const all = collectExistingInteractives(false);
@@ -416,6 +416,8 @@ function toggleSonification(newValue){
     }
 }
 
+
+
 const TTSObserver = new MutationObserver(async mutationsList => {
     const text = gatherTextContent(document.body);
     console.log(text);
@@ -431,6 +433,8 @@ function testTTS(){
     };
     TTSObserver.observe(document.body, config);
 }
+
+
 
 // get semantic description from class name, id, etc of interactive elements
 function extractSemanticDescription(element){

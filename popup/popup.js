@@ -15,7 +15,7 @@ const alternateHeader =() => {
     regularHeaderTitle.classList.toggle('hide');
     const settingBtn = getElementByDataID('header_setting_btn');
     settingBtn.classList.toggle('hide');
-}
+};
 
 const onSettingBtnClicked =() =>{
     if(isSettingModeOn){
@@ -57,7 +57,7 @@ const onSettingBtnClicked =() =>{
             document.removeEventListener('keydown', onKeyDown);
         }
     });
-}
+};
 
 const quitSettingMode =() =>{
     if(!isSettingModeOn){
@@ -82,7 +82,7 @@ const quitSettingMode =() =>{
     featureControlElements.forEach(elem => { elem.disabled = false; });
     isSettingModeOn = !isSettingModeOn;
     alternateHeader();
-}
+};
 
 function setCheckboxAriaChecked(e){
     e.target.setAttribute('aria-checked', e.target.checked);
@@ -94,7 +94,7 @@ const collectFeatureControls =() => {
         controlContainers[i].querySelectorAll('input').forEach(i => featureControlElements.push(i));
         controlContainers[i].querySelectorAll('button').forEach(b => featureControlElements.push(b));
     }
-}
+};
 
 const setSliderFill = (element) =>{
     const value = (element.value-element.min)/(element.max-element.min)*100
@@ -293,7 +293,21 @@ const onNarrationCheckboxChanged =(checkbox) => {
             newValue: checkbox.checked
         }};
     window.postMessage(messageData, window.location.href);
-}
+};
+
+const onARIAOptimizationCheckboxChanged =(checkbox) => {
+    if(isSettingModeOn){
+        return;
+    }
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "toggleARIAOptimization",
+        parameters: {
+            newValue: checkbox.checked
+        }};
+    window.postMessage(messageData, window.location.href);
+};
 
 const onSonificationCheckboxChanged =(checkbox) => {
     if(isSettingModeOn){
@@ -308,7 +322,7 @@ const onSonificationCheckboxChanged =(checkbox) => {
         }};
     window.postMessage(messageData, window.location.href);
     checkbox.checked = false;
-}
+};
 
 const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, regularSVG, muteSVG) => {
     const initialValue = volumeSliderValue.value
