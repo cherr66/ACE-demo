@@ -263,6 +263,7 @@ function toggleSonification(newValue){
         let targetElement, targetRect, distance, maxDistance;
         const elementFoundAudio = new Audio(chrome.runtime.getURL('audios/item_found.mp3'));
         const radarAudioVolumeRange = {min: 0.5, max: 1};
+        const radarPlaybackRateRange = {min: 1, max: 5};
 
         // stereo panner for radar audio
         const radarAudio = new Audio(chrome.runtime.getURL('audios/radar.mp3'));
@@ -313,13 +314,29 @@ function toggleSonification(newValue){
                 // set binaural sound
                 setBinauralSound();
 
+                // distance calculation method 2
                 if(newDistance > distance){
                     radarAudio.volume = 0;
-                    maxDistance = newDistance;
+                    if(newDistance > maxDistance){
+                        maxDistance = newDistance;
+                    }
                 }else{
                     // change volume according to distance difference
                     radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
+
+                    // TODO FOR TESTING 1: playback rate
+                    // radarAudio.volume = radarAudioVolumeRange.min;
+                    // radarAudio.playbackRate = radarPlaybackRateRange.min + (maxDistance - newDistance)/maxDistance * (radarPlaybackRateRange.max - radarPlaybackRateRange.min);
                 }
+
+                // distance calculation method 1
+                // if(newDistance > distance){
+                //     radarAudio.volume = 0;
+                //     maxDistance = newDistance;
+                // }else{
+                //     // change volume according to distance difference
+                //     radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
+                // }
                 distance = newDistance;
             }
         }
@@ -379,6 +396,7 @@ function toggleSonification(newValue){
                     radarAudio.loop = true;
                     radarAudio.currentTime = 0;
                     radarAudio.volume = radarAudioVolumeRange.min;
+                    // radarAudio.playbackRate = radarPlaybackRateRange.min;// TODO FOR TESTING 1: playback rate
                     setBinauralSound();
                     radarAudio.play().then(r => {});
                     targetElement.addEventListener('mouseover', onInteractiveElementFound);
