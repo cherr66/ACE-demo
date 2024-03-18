@@ -202,6 +202,13 @@ function isElementInViewport(element) {
     );
 }
 
+function isInteractiveElementActive(element){
+    if(element.disabled === true){
+        return false;
+    }
+    return isElementPhysicallyVisible(element);
+}
+
 // This function checks if an element is currently visible,
 // If any animation defined, it checks the instant frame instead of the final state.
 function isElementPhysicallyVisible(element){
@@ -306,24 +313,111 @@ function isButtonContentSemantic(button) {
 }
 
 
+function isCursorInsideRect(rect, cursorX, cursorY) {
+    return cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom;
+}
 
-let myQueryHelper = (elem, query, results) => {
-    if (elem.className.toString().indexOf(query) >= 0) {
-        results.push(elem);
+// return an element from array elements, that is closet to a position (cursorX/Y)
+function getClosestElementAndDistance(elements, cursorX, cursorY) {
+    let closestElement = null;
+    let minDistance = Number.MAX_VALUE;
+
+    // todo consider when cursor falls into overlap of 2 more buttons
+
+    elements.forEach(function(element) {
+        let rect = element.getBoundingClientRect();
+
+        // special case: cursor is above the element's rect
+        if(isCursorInsideRect(rect, cursorX, cursorY)){
+            minDistance = -1;
+            closestElement = element;
+            return { closestElement: closestElement, distance: minDistance };
+        }
+
+        let centerX = rect.left + rect.width / 2;
+        let centerY = rect.top + rect.height / 2;
+        let distance = Math.sqrt(Math.pow(cursorX - centerX, 2) + Math.pow(cursorY - centerY, 2));
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestElement = element;
+        }
+    });
+    return { closestElement: closestElement, distance: minDistance };
+}
+
+let speechHistory; //avoid multiple speech with same content
+function speak(text, assertive = true) {
+    if(speechHistory === text){
+        return;
     }
-    for (let child = elem.firstElementChild; child; child = child.nextElementSibling) {
-        myQueryHelper(child, query, results);
+    if(assertive){
+        speechSynthesis.cancel(); // cancel any existing speech
     }
-};
 
-let myQuery = (elem, query) => {
-    let results = [];
-    myQueryHelper(elem, query, results);
-    return results[0] || null;
-};
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = text;
+    msg.lang = 'en-US';
+    msg.volume = 0.5; // todo 音量控制
+    speechSynthesis.speak(msg);
+    speechHistory = text;
+}
 
-let myQueryAll = (elem, query) => {
-    let results = [];
-    myQueryHelper(elem, query, results);
-    return results;
-};
+// gather all text content under a HTML element
+function gatherTextContent(element) {
+    let textContent = '';
+    element.childNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            let tagName = node.tagName.toLowerCase();
+            if(tagName === 'button' || tagName === 'a' || (tagName === 'input' && node.getAttribute('type') === 'submit')) {
+                if (isElementPhysicallyVisible(node)) {
+                    textContent += `${extractDescription(node)} \n`;
+                }
+            }
+            else {
+                const style = window.getComputedStyle(node);
+                if(style.display === 'none'){
+                    return;
+                }
+                if (tagName === 'p' || tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6') {
+                    const content = node.innerText.trim();
+                    if(content !== ''){
+                        textContent += `${content} \n`;
+                    }
+                }else if(tagName !== 'script'){
+                    textContent += gatherTextContent(node).trim();
+                }
+            }
+        }else if(node.nodeType === Node.TEXT_NODE){
+            const content = node.textContent.trim();
+            if(content !== ''){
+                textContent += `${content} \n`;
+            }
+        }
+    });
+    return textContent;
+}
+
+// extract semantic description for interactive elements
+function extractDescription(element){
+    let elemType = 'button';
+    if(element.tagName.toLowerCase() === 'a'){
+        elemType = 'link';
+    }
+    if(element.tagName.toLowerCase() === 'input' && element.type.toLowerCase() === 'submit'){
+        if(element.hasAttribute('alt')){
+            return `${elemType} ${element.alt}`;
+        }else if(element.hasAttribute('aria-label')){
+            return `${elemType} ${element.getAttribute('aria-label')}`;
+        }else{
+            return `${elemType} ${extractSemanticDescription(element)}`;
+        }
+    }else{
+        if(isButtonContentSemantic(element)){
+            return `${elemType} ${element.textContent}`;
+        }else if(element.hasAttribute('aria-label')){
+            return `${elemType} ${element.getAttribute('aria-label')}`;
+        }else{
+            return `${elemType} ${extractSemanticDescription(element)}`;
+        }
+    }
+}

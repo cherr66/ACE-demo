@@ -45,7 +45,7 @@ const createPopupWindowDiv = (parentNode) =>{
     windowDiv.setAttribute(
         'style',
         'position:fixed; ' +
-        'top: 100px; left: 100px; ' +
+        'top: 10px; left: 10px; ' +
         'width: 400px; ' +
         'max-height: 480px; ' +
         'z-index: 2147483650; ' +
@@ -284,16 +284,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({response: "Unknown request." });
 });
 
-function togglePopup(){
+function togglePopup(on){
     root = document.getElementById(rootID);
-    if(root.style.display === "none"){
-        root.style.display = '';
-        window.addEventListener("message", onMessageRecieved);
-    }else{
-        window.removeEventListener("message", onMessageRecieved);
-        window.postMessage({code:"QUIT_SETTING"}, window.location.href);
+    if(on !== undefined){
+        on?toggleOnPopup():toggleOffPopup();
+    }
+    else{
+        root.style.display === "none"?toggleOnPopup():toggleOffPopup();
     }
 }
+
+function toggleOnPopup(){
+    if(isSonificationOn || isMagnifierOn){
+        return;
+    }
+
+    root.style.display = '';
+    window.addEventListener("message", onMessageRecieved);
+}
+
+function toggleOffPopup(){
+    window.removeEventListener("message", onMessageRecieved);
+    window.postMessage({code:"QUIT_SETTING"}, window.location.href);
+}
+
 
 function changeFontSize(newValue) {
     injectionCSSRules.forEach(rule => {
@@ -416,19 +430,3 @@ const initialize = () => {
 }
 
 initialize();
-
-
-
-
-// window.addEventListener("click", (e) => {
-//     chrome.runtime.sendMessage({
-//         greeting: "Greeting from the content script",
-//     }).then(r => {
-//         console.log("Message receiving from the background script:");
-//         console.log(r.response);
-//     }).catch((error) => {
-//         console.error(`Error in content js sendMessage: ${error}`);
-//     });
-// });
-
-    

@@ -295,6 +295,21 @@ const onNarrationCheckboxChanged =(checkbox) => {
     window.postMessage(messageData, window.location.href);
 }
 
+const onSonificationCheckboxChanged =(checkbox) => {
+    if(isSettingModeOn){
+        return;
+    }
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "toggleSonification",
+        parameters: {
+            newValue: checkbox.checked
+        }};
+    window.postMessage(messageData, window.location.href);
+    checkbox.checked = false;
+}
+
 const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, regularSVG, muteSVG) => {
     const initialValue = volumeSliderValue.value
     if(initialValue === 0){ muteSVG.classList.add('hide'); }

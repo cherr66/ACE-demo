@@ -1,10 +1,11 @@
-
+let isMagnifierOn = false;
 function toggleMagnifier(newValue){
+    isMagnifierOn = newValue;
     if(!newValue){
         return;
     }
 
-    togglePopup();
+    togglePopup(false);
     // TODO BUG: without this time delay, a cached screenshot with popup will be captured
     // window.requestAnimationFrame(retrieveScreenshotURL);
     setTimeout(retrieveScreenshotURL, 50);
@@ -94,7 +95,8 @@ function setupMagnifier(request, sender){
     glass.addEventListener("click", closeMagnifier);
     function closeMagnifier() {
         magnifierRoot.remove();
-        togglePopup();
+        isMagnifierOn = false;
+        togglePopup(true);
         // set magnifier focused, ease navigation
         root.shadowRoot.querySelector('[data-ace-id="magnifier_toggle"]').focus();
     }

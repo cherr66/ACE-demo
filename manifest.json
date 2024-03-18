@@ -59,7 +59,7 @@
 //        "https://*.itch.io/*",
         "https://html-classic.itch.zone/*"
       ],
-      "resources": ["popup/*.*", "images/cursor/*.*"]
+      "resources": ["popup/*.*", "images/cursor/*.*", "audios/*.*"]
     }
   ]
 //  "homepage_url": "https://example.com/my-extension-homepage"

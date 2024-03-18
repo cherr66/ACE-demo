@@ -1,7 +1,9 @@
 let interactiveElements = [];
+let hasInteractObservation = false;
 let isNarrationOn = false;
 let isHighlightOn = false;
 let isSonificationOn = false;
+let isBinauralSound = true;
 const interactiveTags = ['button', 'a', 'input[type="submit"]'];
 function isInteractiveNode(node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -11,12 +13,6 @@ function isInteractiveNode(node) {
         || (node.tagName.toLowerCase() === 'input' && node.getAttribute('type') === 'submit');
 }
 
-function isInteractiveElementActive(element){
-    if(element.disabled === true){
-        return false;
-    }
-    return isElementPhysicallyVisible(element);
-}
 
 const interactiveElementsObserver = new MutationObserver(async mutationsList => {
     for (let mutation of mutationsList) {
@@ -155,39 +151,40 @@ const collectExistingInteractives =(filterInvisible = true) =>{
     return allInteractive;
 }
 
-const establishObservation =() =>{
-    // If observation had been established, return
-    // if(isHighlightOn || isNarrationOn  || isSonificationOn){
-    //     return;
-    // }
+const establishInteractObservation =() =>{
+    if(hasInteractObservation){
+        return;
+    }
 
     const config = {
         childList: true
         , subtree: true
         , attributes: true
         , attributeOldValue: true
-        // , attributeFilter: ['class','style']
         , attributeFilter: ['class','style', 'disabled']
     };
     interactiveElementsObserver.observe(document.body, config);
+    hasInteractObservation = true;
 }
 
-const stopObservation =() =>{
-    if(isHighlightOn || isNarrationOn  || isSonificationOn){
+const stopInteractObservation =() =>{
+    // If the any related feature is still on, or the observation does not exist, return
+    if(isHighlightOn || isNarrationOn || !hasInteractObservation){
         return;
     }
     interactiveElementsObserver.disconnect();
     interactiveElements.length = 0;
+    hasInteractObservation = false;
 }
 
 function toggleHighlight(newValue){
     isHighlightOn = newValue;
     if(newValue){
-        if(!isNarrationOn && !isSonificationOn){
-            establishObservation(); // Only start a new observation if it does NOT exist
-            collectExistingInteractives().forEach(i => addInteractiveElement(i));
-        }else{
+        if(hasInteractObservation){
             interactiveElements.forEach(i => generateHighlight(i));
+        }else{
+            establishInteractObservation(); // Only start a new observation if it does NOT exist
+            collectExistingInteractives().forEach(i => addInteractiveElement(i));
         }
     }else{
         // remove all highlights & empty array
@@ -195,26 +192,25 @@ function toggleHighlight(newValue){
             highlightDIVs[i].remove();
         }
         highlightDIVs.length = 0;
-        stopObservation();
+        stopInteractObservation();
     }
 }
 
 function toggleNarration(newValue){
     isNarrationOn = newValue;
     if(newValue){
-        if(!isHighlightOn && !isSonificationOn){
-            establishObservation();
-
+        if(hasInteractObservation){
+            const all = collectExistingInteractives(false);
+            const shouldHide = all.filter(element => !interactiveElements.includes(element));
+            interactiveElements.forEach(i => injectARIAProperties(i));
+            shouldHide.forEach(i => injectARIAHidden(i));
+        }else{
+            establishInteractObservation();
             // set aria-hidden to invisible buttons, and proper aria-labels to the rest
             const all = collectExistingInteractives(false);
             const visible = collectExistingInteractives();
             const shouldHide = all.filter(element => !visible.includes(element));
             visible.forEach(i => addInteractiveElement(i));
-            shouldHide.forEach(i => injectARIAHidden(i));
-        }else{
-            const all = collectExistingInteractives(false);
-            const shouldHide = all.filter(element => !interactiveElements.includes(element));
-            interactiveElements.forEach(i => injectARIAProperties(i));
             shouldHide.forEach(i => injectARIAHidden(i));
         }
 
@@ -236,8 +232,228 @@ function toggleNarration(newValue){
         });
     }else{
         clearARIAInjections();
-        stopObservation();
+        stopInteractObservation();
     }
+}
+
+function toggleSonification(newValue){
+    isSonificationOn = newValue;
+    if(newValue){
+        togglePopup(false); // toggle off pop-up
+        document.addEventListener('mousemove', onSonificationMouseMove);
+        document.addEventListener('keydown', onSonificationKeyDown);
+        document.addEventListener('click', onSonificationClick);
+
+        let cursorX, cursorY;
+        let targetElement, targetRect, distance, maxDistance;
+        const elementFoundAudio = new Audio(chrome.runtime.getURL('audios/item_found.mp3'));
+        const radarAudioVolumeRange = {min: 0.5, max: 1};
+
+        // stereo panner for radar audio
+        const radarAudio = new Audio(chrome.runtime.getURL('audios/radar.mp3'));
+        const audioContext = new AudioContext();
+        const panner = audioContext.createStereoPanner();
+        const source = audioContext.createMediaElementSource(radarAudio);
+        source.connect(panner);
+        panner.connect(audioContext.destination);
+        panner.pan.value = 0; // left ear + right ear
+
+        // collect all visible & active interactive elements
+        let allInteractives, remainingInteractives;
+        allInteractives = Array.from(interactiveElements);
+        if(allInteractives.length <= 0){
+            allInteractives = collectExistingInteractives();
+        }
+
+        // extract semantic description for each element, later will be used in TTS
+        let elementToString = new Map();
+        allInteractives.forEach(elem => {
+            elementToString.set(elem, extractDescription(elem));
+        });
+
+        // In case mousemove event is not fired before navigation starts
+        // This function will record the initial cursor position.
+        document.body.addEventListener('mouseenter', onSoninficationMouseEnter);
+
+        const buttonLeftInfo = allInteractives.length <= 0 ? 'no buttons left' :
+            allInteractives.length === 1 ? '1 button left, press X to start, press N for next button' :
+                `${allInteractives.length} buttons left, press X to start, press N for next button`;
+        speak(`Sonification on, ${buttonLeftInfo}, press Q to quit.`);
+
+        function onSoninficationMouseEnter(event){
+            cursorX = event.clientX;
+            cursorY = event.clientY;
+            document.body.removeEventListener('mouseenter', onSoninficationMouseEnter);
+        }
+        function onSonificationMouseMove(event) {
+            cursorX = event.clientX;
+            cursorY = event.clientY;
+
+            if(targetElement !== null && targetElement !== undefined){
+                // calculate the current distance
+                let centerX = targetRect.left + targetRect.width / 2;
+                let centerY = targetRect.top + targetRect.height / 2;
+                let newDistance = Math.sqrt(Math.pow(cursorX - centerX, 2) + Math.pow(cursorY - centerY, 2));
+
+                // set binaural sound
+                setBinauralSound();
+
+                if(newDistance > distance){
+                    radarAudio.volume = 0;
+                    maxDistance = newDistance;
+                }else{
+                    // change volume according to distance difference
+                    radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
+                }
+                distance = newDistance;
+            }
+        }
+        function onSonificationKeyDown(event){
+            // start navigation with sonification
+            if (event.key.toLowerCase() === 'x') {
+                remainingInteractives = Array.from(allInteractives);
+                startElementSonification(true);
+            }
+
+            // looking for the next element
+            if(event.key.toLowerCase() === 'n'){
+                if(remainingInteractives.length <= 0){
+                    speak('no next button.');
+                }else{
+                    startElementSonification();
+                }
+            }
+
+            // quit sonification mode
+            if(event.key.toLowerCase() === 'q'){
+                quitSonification();
+            }
+        }
+
+        function onSonificationClick(event){
+            if(allInteractives.includes(event.target)){
+                quitSonification();
+            }
+        }
+
+        function startElementSonification(isStartOver = false){
+            // If sonification starts without the previous button being founded, remove event listener
+            if(targetElement !== null && targetElement !== undefined){
+                targetElement.removeEventListener('mouseover', onInteractiveElementFound);
+            }
+
+            let result = getClosestElementAndDistance(remainingInteractives, cursorX, cursorY);
+            if(result.closestElement !== null){
+                targetElement = result.closestElement;
+                targetRect = targetElement.getBoundingClientRect();
+                maxDistance = distance = result.distance;
+                // console.log(targetElement, targetRect, distance, maxDistance);
+
+                // filter this one, so that it won't be counted when 'next button' triggered
+                const index = remainingInteractives.indexOf(targetElement);
+                if (index !== -1) {
+                    remainingInteractives.splice(index, 1);
+                }
+
+                // If cursor reaches the target initially
+                if(distance === -1){
+                    onInteractiveElementFound();
+                }else{
+                    const prefix = isStartOver? 'navigation start over': 'navigation start';
+                    speak(`${prefix}. ${elementToString.get(targetElement)}.`);
+                    radarAudio.loop = true;
+                    radarAudio.currentTime = 0;
+                    radarAudio.volume = radarAudioVolumeRange.min;
+                    setBinauralSound();
+                    radarAudio.play().then(r => {});
+                    targetElement.addEventListener('mouseover', onInteractiveElementFound);
+                }
+            }
+        }
+
+        function onInteractiveElementFound(){
+            radarAudio.pause();
+            // The following code is unnecessary if no multiple playing of sound effect needed
+            // if (!elementFoundAudio.paused) {
+            //     elementFoundAudio.currentTime = 0;
+            // }
+            elementFoundAudio.play().then(r => {
+                const remainingButtonInfo = remainingInteractives.length <= 0 ? 'no buttons left, press X to re-start' :
+                    remainingInteractives.length === 1 ? '1 button left, press N for next button' :
+                        `${remainingInteractives.length} buttons left, press N for next button`;
+                speak(`${elementToString.get(targetElement)} found, ${remainingButtonInfo}, press Q to quit.`);
+
+                targetElement.removeEventListener('mouseover', onInteractiveElementFound);
+                targetElement = null;
+                targetRect = null;
+                distance = Number.MAX_VALUE;
+            });
+        }
+
+        function quitSonification(){
+            speak('quit sonification');
+            document.removeEventListener('mousemove', onSonificationMouseMove);
+            document.removeEventListener('keydown', onSonificationKeyDown);
+            document.removeEventListener('click', onSonificationClick);
+            allInteractives.forEach(i => {
+                i.removeEventListener('mouseover', onInteractiveElementFound);
+            });
+            isSonificationOn = false;
+            togglePopup(true); // toggle on pop-up
+        }
+
+        function setBinauralSound(){
+            if(isBinauralSound){
+                if(cursorX < targetRect.left){
+                    panner.pan.value = 1;
+                }else if(cursorX <= targetRect.left + targetRect.width){
+                    panner.pan.value = 0;
+                }else{
+                    panner.pan.value = -1;
+                }
+            }
+        }
+    }
+}
+
+const TTSObserver = new MutationObserver(async mutationsList => {
+    const text = gatherTextContent(document.body);
+    console.log(text);
+    speak(text);
+});
+function testTTS(){
+    const text = gatherTextContent(document.body);
+    console.log(text);
+    speak(text);
+
+    const config = {
+        childList: true, subtree: true , attributes: true
+    };
+    TTSObserver.observe(document.body, config);
+}
+
+// get semantic description from class name, id, etc of interactive elements
+function extractSemanticDescription(element){
+    if(!element){
+        return ;
+    }
+
+    const classNames = Array.from(element.classList);
+    const id = element.id;
+    let description = classNames.join(' ') + ' ' + id;
+    let words = description.split(/\s+/);
+    words = [...new Set(words)]; // remove duplicated words
+    const uniqueWords = []; // remove self-contained words
+    words.forEach(word => {
+        const tmpWord = word.toLowerCase();
+        const index = uniqueWords.findIndex(uniqueWord => tmpWord !== uniqueWord.toLowerCase() && tmpWord.includes(uniqueWord.toLowerCase()));
+        if (index !== -1) {
+            uniqueWords.splice(index, 1, word);
+        } else if (!(uniqueWords.some(uniqueWord => uniqueWord.toLowerCase().includes(tmpWord)))) {
+            uniqueWords.push(word);
+        }
+    });
+    return uniqueWords.join(' ').replace(/(btn|button)/gi, '');
 }
 
 function injectARIAProperties(interactiveElem){
@@ -267,24 +483,7 @@ function injectARIAProperties(interactiveElem){
         setRoleBasedOnTag(interactiveElem);
     }
 
-    // get semantic description from class name, id, etc
-    const classNames = Array.from(interactiveElem.classList);
-    const id = interactiveElem.id;
-    let description = classNames.join(' ') + ' ' + id;
-    let words = description.split(/\s+/);
-    words = [...new Set(words)]; // remove duplicated words
-    const uniqueWords = []; // remove self-contained words
-    words.forEach(word => {
-        const tmpWord = word.toLowerCase();
-        const index = uniqueWords.findIndex(uniqueWord => tmpWord !== uniqueWord.toLowerCase() && tmpWord.includes(uniqueWord.toLowerCase()));
-        if (index !== -1) {
-            uniqueWords.splice(index, 1, word);
-        } else if (!(uniqueWords.some(uniqueWord => uniqueWord.toLowerCase().includes(tmpWord)))) {
-            uniqueWords.push(word);
-        }
-    });
-    const uniqueDescription = uniqueWords.join(' ').replace(/(btn|button)/gi, '');
-
+    const uniqueDescription = extractSemanticDescription(interactiveElem);
     if(uniqueDescription.length > 0){
         interactiveElem.setAttribute('aria-label', uniqueDescription);
         interactiveElem.setAttribute('data-manually-added-ARIA', 'show'); // an identifier ease cleaning
