@@ -57,6 +57,11 @@ const onSettingBtnClicked =() =>{
             document.removeEventListener('keydown', onKeyDown);
         }
     });
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "onSettingModeToggled"};
+    window.postMessage(messageData, window.location.href);
 };
 
 const quitSettingMode =() =>{
@@ -82,6 +87,11 @@ const quitSettingMode =() =>{
     featureControlElements.forEach(elem => { elem.disabled = false; });
     isSettingModeOn = !isSettingModeOn;
     alternateHeader();
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "onSettingModeToggled"};
+    window.postMessage(messageData, window.location.href);
 };
 
 function setCheckboxAriaChecked(e){
@@ -187,19 +197,19 @@ const setFontFamilyDropDown = () => {
 function onArrowKeysDownOnDropdown(event) {
     const dropdownBtn = getElementByDataID('font_family_dropdown_btn');
     if(event.target !== dropdownBtn ||
-        (event.key !== 'ArrowUp' && event.key !== 'ArrowDown' && event.key !== 'Enter')){
+        (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Enter' && event.key !== 'Tab')){
         return;
     }
 
     const dropdown = getElementByDataID('font_family_dropdown');
     // navigation on dropdown
-    if(event.key === 'ArrowUp' || event.key === 'ArrowDown'){
+    if(event.key === 'ArrowLeft' || event.key === 'ArrowRight'){
         event.preventDefault();
         const oldSelectedOption = rootElem.getElementById(dropdown.getAttribute('aria-activedescendant'));
         let newSelectedOption;
-        if (event.key === 'ArrowUp') {
+        if (event.key === 'ArrowLeft') {
             newSelectedOption = oldSelectedOption.previousElementSibling;
-        }else if(event.key === 'ArrowDown'){
+        }else if(event.key === 'ArrowRight'){
             newSelectedOption = oldSelectedOption.nextElementSibling;
         }
         if(newSelectedOption !== null && oldSelectedOption !== null
@@ -209,6 +219,17 @@ function onArrowKeysDownOnDropdown(event) {
             newSelectedOption.setAttribute('aria-selected', 'true');
             newSelectedOption.classList.add('selected');
             dropdown.setAttribute('aria-activedescendant', newSelectedOption.id);
+
+            if(getElementByDataID('narration_checkbox').checked){
+                const messageData = {
+                    sender: "popup.js",
+                    functionName: "speak",
+                    parameters: {
+                        newValue: `${newSelectedOption.innerText},
+                            ${Array.from(newSelectedOption.parentElement.children).indexOf(newSelectedOption) + 1} of ${getElementByDataID('font_family_dropdown').childElementCount}`,
+                    }};
+                window.postMessage(messageData, window.location.href);
+            }
         }
     }
 
@@ -224,6 +245,23 @@ function onArrowKeysDownOnDropdown(event) {
                 newValue: newFontFamily,
             }};
         window.postMessage(messageData, window.location.href);
+
+        if(getElementByDataID('narration_checkbox').checked){
+            const messageData = {
+                sender: "popup.js",
+                functionName: "speak",
+                parameters: {
+                    newValue: `${newFontFamily} selected, close select`,
+                }};
+            window.postMessage(messageData, window.location.href);
+        }
+    }
+
+    // toggle off dropdown if it loses focus
+    if(event.key === 'Tab'){
+        if (!dropdown.classList.contains('hide')){
+            dropdown.classList.add('hide');
+        }
     }
 }
 
@@ -238,6 +276,16 @@ const toggleDropdown =() => {
     // arrow keys event listener
     if(!containHide){
         rootElem.addEventListener('keydown', onArrowKeysDownOnDropdown);
+
+        if(getElementByDataID('narration_checkbox').checked){
+            const messageData = {
+                sender: "popup.js",
+                functionName: "speak",
+                parameters: {
+                    newValue: `open select, ${getElementByDataID('font_family_dropdown').childElementCount} options`,
+                }};
+            window.postMessage(messageData, window.location.href);
+        }
     }
 };
 
@@ -412,6 +460,55 @@ const setSonificationVolumeSliderListener = () => {
         regularSVG, muteSVG);
 };
 
+const setControlsNavigation =() => {
+    // make checkboxes able to receive keyboard enter event
+    const checkboxes = rootElem.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(c => {
+        c.addEventListener('keypress', function (event){
+            if (event.key === 'Enter') {
+                c.checked = !c.checked;
+                if (typeof this.onchange === "function") {
+                    this.onchange();
+                }
+
+                // If narration is ON, speak its content.
+                if(getElementByDataID('narration_checkbox').checked){
+                    const messageData = {
+                        sender: "popup.js",
+                        functionName: "speak",
+                        parameters: {
+                            newValue: (c.checked)?'checked':'not checked',
+                        }};
+                    window.postMessage(messageData, window.location.href);
+                }
+            }
+        });
+    });
+
+    const sliders = rootElem.querySelectorAll('input[type="range"]');
+    sliders.forEach(s => {
+        s.addEventListener('keydown', function (event){
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                // If narration is ON, speak its content.
+                if(getElementByDataID('narration_checkbox').checked){
+                    console.log(s.value , parseFloat(s.step));
+                    console.log(parseFloat(s.value) + parseFloat(s.step));
+                    console.log(Math.min(parseFloat(s.value) + parseFloat(s.step), s.max));
+                    const messageData = {
+                        sender: "popup.js",
+                        functionName: "speak",
+                        parameters: {
+                            newValue: s.ariaValueNow.replace(s.value, ((event.key === 'ArrowLeft')?
+                                Math.max(parseFloat(s.value) - parseFloat(s.step), s.min):
+                                Math.min(parseFloat(s.value) + parseFloat(s.step), s.max)).toString()),
+                        }};
+                    window.postMessage(messageData, window.location.href);
+                }
+            }
+        });
+    });
+}
+
 const initialize = () => {
     setFontSizeSliderListener();
     setCursorSizeSliderListener();
@@ -420,6 +517,7 @@ const initialize = () => {
     // setGameVolumeSliderListener();
     // setSonificationVolumeSliderListener();
     collectFeatureControls();
+    setControlsNavigation();
 };
 
 

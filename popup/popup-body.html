@@ -40,6 +40,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable font size slider" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
@@ -47,7 +48,8 @@
             <label class="mask_scope">
                 <span class="mask"></span>
                 <span aria-hidden="true" data-ace-id="font_size_slider_value">100%</span>
-                <input role="slider" aria-roledescription="font size slider" aria-valuemin="100%" aria-valuemax="300%" aria-valuenow="100%" class="slider" type="range" min="1" max="3" value="0" step="0.5" data-ace-id="font_size_slider">
+                <input role="slider" aria-label="font size slider" aria-valuemin="100%" aria-valuemax="300%" aria-valuenow="100%" class="slider" type="range" min="1" max="3" value="0" step="0.5" data-ace-id="font_size_slider">
+                <div class="focus_border with_size_slider"></div>
             </label>
         </div>
     </div>
@@ -56,6 +58,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable font family select" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div role="group" class="feature_control_container">
@@ -71,7 +74,7 @@
                         <div role="option" aria-selected="false" id="font_option_courier" data-ace-select-option-value="Courier">Courier New</div>
                         <div role="option" aria-selected="false" id="font_option_times_new_roman" data-ace-select-option-value="Times New Roman">Times New Roman</div>
                     </div>
-                    <button role="combobox" aria-roledescription="select font family" aria-haspopup="listbox" aria-controls="font_family_dropdown" aria-expanded="false" aria-live="polite" tabindex="0" data-ace-id="font_family_dropdown_btn" class="dropdown_button" onclick="toggleDropdown()">Original</button>
+                    <button role="combobox" aria-label="select font family" aria-haspopup="listbox" aria-controls="font_family_dropdown" aria-expanded="false" aria-live="polite" tabindex="0" data-ace-id="font_family_dropdown_btn" class="dropdown_button" onclick="toggleDropdown()">Original</button>
                 </div>
             </label>
         </div>
@@ -81,6 +84,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable cursor size slider" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
@@ -88,7 +92,8 @@
             <label class="mask_scope">
                 <span class="mask"></span>
                 <span aria-hidden="true" data-ace-id="cursor_size_slider_value">100%</span>
-                <input role="slider" aria-roledescription="cursor size slider" aria-valuemin="100%" aria-valuemax="400%" aria-valuenow="100%" class="slider" type="range" min="1" max="4" value="0" step="1" data-ace-id="cursor_size_slider">
+                <input role="slider" aria-label="cursor size slider" aria-valuemin="100%" aria-valuemax="400%" aria-valuenow="100%" class="slider" type="range" min="1" max="4" value="0" step="1" data-ace-id="cursor_size_slider">
+                <div class="focus_border with_size_slider"></div>
             </label>
         </div>
     </div>
@@ -97,15 +102,17 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable magnifier toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
             <span aria-hidden="true">Magnifier</span>
             <label class="mask_scope switch">
                 <span class="mask"></span>
-                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate magnifying glass" type="checkbox" data-ace-id="magnifier_toggle" onchange="onMagnifierCheckboxChanged(this)">
+                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate magnifying glass" type="checkbox" data-ace-id="magnifier_toggle" onchange="onMagnifierCheckboxChanged(this)" >
                 <span class="toggle round">
                     </span>
+                <div class="focus_border with_toggle_switch"></div>
             </label>
         </div>
     </div>
@@ -114,6 +121,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable highlight toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
@@ -123,6 +131,7 @@
                 <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate highlighting" type="checkbox" onchange="onHighlightCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
+                <div class="focus_border with_toggle_switch"></div>
             </label>
         </div>
     </div>
@@ -131,6 +140,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable sonification toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
@@ -140,6 +150,7 @@
                 <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate sonification" type="checkbox" onchange="onSonificationCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
+                <div class="focus_border with_toggle_switch"></div>
             </label>
         </div>
     </div>
@@ -148,15 +159,17 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable narration toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
             <span aria-hidden="true">Narration</span>
             <label class="mask_scope switch">
                 <span class="mask"></span>
-                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate narration" type="checkbox" onchange="onNarrationCheckboxChanged(this)">
+                <input role="checkbox" data-ace-id="narration_checkbox" aria-roledescription="toggle switch" aria-label="activate narration" type="checkbox" onchange="onNarrationCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
+                <div class="focus_border with_toggle_switch"></div>
             </label>
         </div>
     </div>
@@ -165,13 +178,14 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable narration volume widgets" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div role="group" aria-label="narration volume" class="feature_control_container">
             <span aria-hidden="true">Narration<br>Volume</span>
             <label class="mask_scope volume_slider_container">
                 <span class="mask"></span>
-                <button role="button" type="button" aria-label="mute" data-ace-id="narration_volume_button">
+                <button role="button" type="button" aria-label="mute narration volume" data-ace-id="narration_volume_button">
                     <div data-ace-id="narration_volume_mute_svg">
                         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M16 9.50009L21 14.5001M21 9.50009L16 14.5001M4.6 9.00009H5.5012C6.05213 9.00009 6.32759 9.00009 6.58285 8.93141C6.80903 8.87056 7.02275 8.77046 7.21429 8.63566C7.43047 8.48353 7.60681 8.27191 7.95951 7.84868L10.5854 4.69758C11.0211 4.17476 11.2389 3.91335 11.4292 3.88614C11.594 3.86258 11.7597 3.92258 11.8712 4.04617C12 4.18889 12 4.52917 12 5.20973V18.7904C12 19.471 12 19.8113 11.8712 19.954C11.7597 20.0776 11.594 20.1376 11.4292 20.114C11.239 20.0868 11.0211 19.8254 10.5854 19.3026L7.95951 16.1515C7.60681 15.7283 7.43047 15.5166 7.21429 15.3645C7.02275 15.2297 6.80903 15.1296 6.58285 15.0688C6.32759 15.0001 6.05213 15.0001 5.5012 15.0001H4.6C4.03995 15.0001 3.75992 15.0001 3.54601 14.8911C3.35785 14.7952 3.20487 14.6422 3.10899 14.4541C3 14.2402 3 13.9601 3 13.4001V10.6001C3 10.04 3 9.76001 3.10899 9.54609C3.20487 9.35793 3.35785 9.20495 3.54601 9.10908C3.75992 9.00009 4.03995 9.00009 4.6 9.00009Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -183,7 +197,8 @@
                         </svg>
                     </div>
                 </button>
-                <input role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" class="slider" type="range" min="0" max="100" value="0" step="1" data-ace-id="narration_volume_slider">
+                <input aria-label="narration volume slider" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" class="slider" type="range" min="0" max="100" value="0" step="1" data-ace-id="narration_volume_slider">
+                <div class="focus_border with_volume_slider"></div>
                 <span aria-hidden="true" data-ace-id="narration_volume_value">0</span>
             </label>
         </div>
@@ -193,6 +208,7 @@
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
                 <input role="checkbox" aria-label="enable ARIA optimization toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
@@ -202,6 +218,7 @@
                 <input role="checkbox" data-ace-id="ARIA_optimization_checkbox" aria-roledescription="toggle switch" aria-label="activate ARIA Optimization" type="checkbox" onchange="onARIAOptimizationCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
+                <div class="focus_border with_toggle_switch"></div>
             </label>
         </div>
     </div>

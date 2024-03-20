@@ -447,3 +447,43 @@ label.switch input {
     z-index: 1;
     background: rgba(255, 255, 255, 0.5); /* White background with 50% opacity */
 }
+
+
+/* tab focus styling*/
+.focus_border{
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+.slider:focus + .focus_border.with_size_slider{
+    display: inline-block;
+    top: -6px;
+    left: 42px;
+    width: 139px;
+    height: 27px;
+}
+.slider:focus + .focus_border.with_volume_slider{
+    display: inline-block;
+    top: -1px;
+    left: 32px;
+    width: 139px;
+    height: 27px;
+}
+input[type="checkbox"]:focus ~ .focus_border.with_toggle_switch{
+    display: inline-block;
+    top: -3.5px;
+    left: -4px;
+    width: 56px;
+    height: 28px;
+    border-radius: 20px;
+}
+input[type="checkbox"]:focus + .focus_border.with_control_checkbox{
+    display: inline-block;
+    top: -4px;
+    left: -4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px
+}

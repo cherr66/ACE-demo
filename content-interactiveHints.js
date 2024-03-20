@@ -200,7 +200,6 @@ function toggleNarration(newValue){
     isNarrationOn = newValue;
     if(newValue){
         narrateDOMContent();
-
         const config = {
             childList: true, subtree: true , attributes: true
         };
@@ -342,13 +341,13 @@ function toggleSonification(newValue){
         }
         function onSonificationKeyDown(event){
             // start navigation with sonification
-            if (event.key.toLowerCase() === 'x') {
+            if (event.key === 'X') {
                 remainingInteractives = Array.from(allInteractives);
                 startElementSonification(true);
             }
 
             // looking for the next element
-            if(event.key.toLowerCase() === 'n'){
+            if(event.key === 'N'){
                 if(remainingInteractives.length <= 0){
                     speak('no next button.');
                 }else{
@@ -357,7 +356,7 @@ function toggleSonification(newValue){
             }
 
             // quit sonification mode
-            if(event.key.toLowerCase() === 'q'){
+            if(event.key === 'Q' || event.key === 'Escape'){
                 quitSonification();
             }
         }

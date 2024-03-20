@@ -18,7 +18,7 @@
 
 let root; // root node for all features
 let rootID = 'ace_demo_popup';
-
+let popupWindow;
 
 // create the root Node for whole extension HTMLs
 const createDOMRoot = () => {
@@ -269,7 +269,9 @@ function onMessageRecieved(event){
     }
 
     if(typeof window[event.data.functionName] === "function"){
-        window[event.data.functionName](event.data.parameters.newValue);
+        (event.data.parameters)?
+            window[event.data.functionName](event.data.parameters.newValue):
+            window[event.data.functionName]();
     }else{
         console.error("Function not found:", event.data.functionName);
     }
@@ -285,12 +287,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function togglePopup(on){
-    root = document.getElementById(rootID);
+    root = document.getElementById(rootID).shadowRoot;
     if(on !== undefined){
         on?toggleOnPopup():toggleOffPopup();
     }
     else{
-        root.style.display === "none"?toggleOnPopup():toggleOffPopup();
+        document.getElementById(rootID).style.display === "none"?toggleOnPopup():toggleOffPopup();
     }
 }
 
@@ -298,14 +300,17 @@ function toggleOnPopup(){
     if(isSonificationOn || isMagnifierOn){
         return;
     }
-
-    root.style.display = '';
+    document.getElementById(rootID).style.display = '';
     window.addEventListener("message", onMessageRecieved);
+    if(lastActiveElement){
+        lastActiveElement.focus();
+    }
 }
 
 function toggleOffPopup(){
     window.removeEventListener("message", onMessageRecieved);
     window.postMessage({code:"QUIT_SETTING"}, window.location.href);
+    lastActiveElement = root.activeElement;
 }
 
 
@@ -415,17 +420,95 @@ function onExtensionOpen(){
     });
 }
 
+let popupControls;
+let lastActiveElement;
+function onSettingModeToggled(){
+    //update popup control array
+    popupControls = Array.from(root.querySelectorAll("button, input")).filter(widget => {
+        let computedStyle = window.getComputedStyle(widget);
+        return !isElementDisplayNone(widget) && widget.disabled === false;
+    });
+    popupWindow.focus();
+}
+function setPopupNavigationSpeech(){
+    function getPreviousControl(element) {
+        if (!popupControls) {
+            onSettingModeToggled();
+        }
+        const currentIndex = popupControls.indexOf(element);
+        if(currentIndex - 1 >= 0){
+            let previousIndex = (currentIndex - 1 + popupControls.length) % popupControls.length;
+            return popupControls[previousIndex];
+        }
+    }
+    function getNextControl(element) {
+        if(!popupControls){
+            onSettingModeToggled();
+        }
+        const currentIndex = popupControls.indexOf(element);
+        if(currentIndex + 1 < popupControls.length){
+            let nextIndex = (currentIndex + 1) % popupControls.length;
+            return popupControls[nextIndex];
+        }
+    }
+
+    function onPopupKeyDown(event){
+        if (event.key === 'Tab') {
+            const toBeFocused = getNextControl(root.activeElement);
+            if(isNarrationOn && toBeFocused) {
+                speak(getARIAContent(toBeFocused));
+            }
+        }
+        if(event.key === 'ArrowUp'){
+            event.preventDefault();
+            const toBeFocused = getPreviousControl(root.activeElement);
+            if(toBeFocused){
+                toBeFocused.focus();
+                if(isNarrationOn && root.activeElement){
+                    speak(getARIAContent(root.activeElement));
+                }
+            }else{
+                speak('no previous control');
+            }
+        }
+        if(event.key === 'ArrowDown'){
+            event.preventDefault();
+            const toBeFocused = getNextControl(root.activeElement);
+            if(toBeFocused){
+                toBeFocused.focus();
+                if(isNarrationOn && root.activeElement){
+                    speak(getARIAContent(toBeFocused));
+                }
+            }else{
+                speak('no next control');
+            }
+        }
+        if (event.shiftKey && event.key === "S") {
+            popupWindow.focus(); // shift+S: focus popup
+        }
+    }
+    function onDocumentKeyDown(event){
+        if (event.shiftKey && event.key === "S") {
+            popupWindow.focus(); // shift+S: focus popup
+        }
+    }
+    root.addEventListener("keydown", onPopupKeyDown);
+    document.addEventListener("keydown", onDocumentKeyDown);
+}
+
 const initialize = () => {
-    root = document.getElementById(rootID);
-    if(root === null){
+    if(document.getElementById(rootID) === null){
         root = createDOMRoot(); // root is shadowRoot
         applyStyleSheet(root);
-        const windowDiv = createPopupWindowDiv(root);
-        loadHTML(windowDiv);
+        popupWindow = createPopupWindowDiv(root);
+        loadHTML(popupWindow);
         applyScripts(root);
         initializeFeatureRelatedStuff();
         injectHighlightCSS();
         window.addEventListener("message", onMessageRecieved);
+        setPopupNavigationSpeech();
+    }else{
+        root = document.getElementById(rootID).shadowRoot;
     }
 }
 

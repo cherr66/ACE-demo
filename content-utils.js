@@ -226,6 +226,17 @@ function isElementPhysicallyVisible(element){
     return isElementInViewport(element) && isElementUnobscured(element);
 }
 
+function isElementDisplayNone(element) {
+    let computedStyle = window.getComputedStyle(element);
+    if (computedStyle.display === "none") {
+        return true;
+    }
+    if (element.parentElement) {
+        return isElementDisplayNone(element.parentElement);
+    }
+    return false;
+}
+
 const querySelectorAllActive =(elem, query) => {
     return querySelectorAllVisible(elem, query).filter(e => e.disabled === false);
 }
@@ -447,4 +458,52 @@ function extractDescription(element){
             return `${elemType} ${extractSemanticDescription(element)}`;
         }
     }
+}
+
+function isSlider(element){
+    return element.tagName.toLowerCase() === "input" && element.type === "range";
+}
+
+function isCheckbox(element){
+    return element.tagName.toLowerCase() === "input" && element.type === "checkbox";
+}
+
+function getARIAContent(element){
+    let combination = '';
+    if(element.role !== null){
+        combination += element.role + ' ';
+        // if(element.ariaRoleDescription !== null){
+        //     combination += element.ariaRoleDescription + ' ';
+        // }
+    }else if(element.type !== null){
+        combination += element.type + ' ';
+    }
+
+    if(element.ariaLabel !== null){
+        combination += element.ariaLabel + ' ';
+    }
+
+    // slider
+    if(isSlider(element)){
+        // if(element.ariaValueMin !== null){
+        //     combination += element.ariaValueMin + ' ';
+        // }
+        // if(element.ariaValueMax !== null){
+        //     combination += element.ariaValueMax + ' ';
+        // }
+        if(element.ariaValueNow !== null){
+            combination += element.ariaValueNow + ' ';
+        }
+    }
+
+    // toggle switch / checkbox
+    if(isCheckbox(element)) {
+        if(element.checked !== undefined){
+            (element.checked)?
+                combination += 'checked' + ' ':
+                combination += 'not checked' + ' ';
+        }
+    }
+
+    return combination;
 }

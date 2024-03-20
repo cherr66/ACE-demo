@@ -98,6 +98,6 @@ function setupMagnifier(request, sender){
         isMagnifierOn = false;
         togglePopup(true);
         // set magnifier focused, ease navigation
-        root.shadowRoot.querySelector('[data-ace-id="magnifier_toggle"]').focus();
+        root.querySelector('[data-ace-id="magnifier_toggle"]').focus();
     }
 }
