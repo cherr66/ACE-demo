@@ -291,9 +291,9 @@ function toggleSonification(newValue){
         document.body.addEventListener('mouseenter', onSoninficationMouseEnter);
 
         const buttonLeftInfo = allInteractives.length <= 0 ? 'no buttons left' :
-            allInteractives.length === 1 ? '1 button left, press X to start, press N for next button' :
-                `${allInteractives.length} buttons left, press X to start, press N for next button`;
-        speak(`Sonification on, ${buttonLeftInfo}, press Q to quit.`);
+            allInteractives.length === 1 ? '1 button left, press S to start, press F for next button' :
+                `${allInteractives.length} buttons left, press S to start, press F for next button`;
+        speak(`Sonification on, ${buttonLeftInfo}, press Q or Esc to quit.`);
 
         function onSoninficationMouseEnter(event){
             cursorX = event.clientX;
@@ -341,13 +341,13 @@ function toggleSonification(newValue){
         }
         function onSonificationKeyDown(event){
             // start navigation with sonification
-            if (event.key === 'X') {
+            if (event.key.toLowerCase() === 's') {
                 remainingInteractives = Array.from(allInteractives);
                 startElementSonification(true);
             }
 
             // looking for the next element
-            if(event.key === 'N'){
+            if(event.key.toLowerCase() === 'f'){
                 if(remainingInteractives.length <= 0){
                     speak('no next button.');
                 }else{
@@ -356,7 +356,7 @@ function toggleSonification(newValue){
             }
 
             // quit sonification mode
-            if(event.key === 'Q' || event.key === 'Escape'){
+            if(event.key.toLowerCase() === 'q' || event.key === 'Escape'){
                 quitSonification();
             }
         }
@@ -410,10 +410,10 @@ function toggleSonification(newValue){
             //     elementFoundAudio.currentTime = 0;
             // }
             elementFoundAudio.play().then(r => {
-                const remainingButtonInfo = remainingInteractives.length <= 0 ? 'no buttons left, press X to re-start' :
-                    remainingInteractives.length === 1 ? '1 button left, press N for next button' :
-                        `${remainingInteractives.length} buttons left, press N for next button`;
-                speak(`${elementToString.get(targetElement)} found, ${remainingButtonInfo}, press Q to quit.`);
+                const remainingButtonInfo = remainingInteractives.length <= 0 ? 'no buttons left, press S to re-start' :
+                    remainingInteractives.length === 1 ? '1 button left, press F for next button' :
+                        `${remainingInteractives.length} buttons left, press F for next button`;
+                speak(`${elementToString.get(targetElement)} found, ${remainingButtonInfo}, press Q or Esc to quit.`);
 
                 targetElement.removeEventListener('mouseover', onInteractiveElementFound);
                 targetElement = null;
@@ -424,6 +424,7 @@ function toggleSonification(newValue){
 
         function quitSonification(){
             speak('quit sonification');
+            radarAudio.volume = 0;
             document.removeEventListener('mousemove', onSonificationMouseMove);
             document.removeEventListener('keydown', onSonificationKeyDown);
             document.removeEventListener('click', onSonificationClick);
