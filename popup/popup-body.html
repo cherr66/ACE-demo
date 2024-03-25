@@ -116,38 +116,20 @@
             </label>
         </div>
     </div>
+
     <div class="row_divider" aria-hidden="true"> </div>
-    <div class="row" aria-label="highlight" aria-atomic="true">
+    <div class="row" aria-label="ARIA optimization" aria-atomic="true">
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
-                <input role="checkbox" aria-label="enable highlight toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <input role="checkbox" aria-label="enable ARIA optimization toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
                 <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
-            <span aria-hidden="true">Highlight</span>
+            <span aria-hidden="true">ARIA Optimization</span>
             <label class="mask_scope switch">
                 <span class="mask"></span>
-                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate highlighting" type="checkbox" onchange="onHighlightCheckboxChanged(this)">
-                <span class="toggle round">
-                    </span>
-                <div class="focus_border with_toggle_switch"></div>
-            </label>
-        </div>
-    </div>
-    <div class="row_divider" aria-hidden="true"> </div>
-    <div class="row" aria-label="sonification" aria-atomic="true">
-        <div class="feature_checkbox_container hide">
-            <label class="round_check_box_label">
-                <input role="checkbox" aria-label="enable sonification toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
-                <div class="focus_border with_control_checkbox"></div>
-            </label>
-        </div>
-        <div class="feature_control_container">
-            <span aria-hidden="true">Sonification</span>
-            <label class="mask_scope switch">
-                <span class="mask"></span>
-                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate sonification" type="checkbox" onchange="onSonificationCheckboxChanged(this)">
+                <input role="checkbox" data-ace-id="ARIA_optimization_checkbox" aria-roledescription="toggle switch" aria-label="activate ARIA Optimization" type="checkbox" onchange="onARIAOptimizationCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
                 <div class="focus_border with_toggle_switch"></div>
@@ -203,22 +185,97 @@
             </label>
         </div>
     </div>
+
+
     <div class="row_divider" aria-hidden="true"> </div>
-    <div class="row" aria-label="ARIA optimization" aria-atomic="true">
+    <div class="row" aria-label="highlight" aria-atomic="true">
         <div class="feature_checkbox_container hide">
             <label class="round_check_box_label">
-                <input role="checkbox" aria-label="enable ARIA optimization toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <input role="checkbox" aria-label="enable highlight toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
                 <div class="focus_border with_control_checkbox"></div>
             </label>
         </div>
         <div class="feature_control_container">
-            <span aria-hidden="true">ARIA Optimization</span>
+            <span aria-hidden="true">Highlight</span>
             <label class="mask_scope switch">
                 <span class="mask"></span>
-                <input role="checkbox" data-ace-id="ARIA_optimization_checkbox" aria-roledescription="toggle switch" aria-label="activate ARIA Optimization" type="checkbox" onchange="onARIAOptimizationCheckboxChanged(this)">
+                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate highlighting" type="checkbox" onchange="onHighlightCheckboxChanged(this)">
                 <span class="toggle round">
                     </span>
                 <div class="focus_border with_toggle_switch"></div>
+            </label>
+        </div>
+    </div>
+    <div class="row_divider" aria-hidden="true"> </div>
+    <div class="row" aria-label="highlight border" aria-atomic="true">
+        <div class="feature_checkbox_container hide">
+            <label class="round_check_box_label">
+                <input role="checkbox" aria-label="enable highlight border selection" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
+            </label>
+        </div>
+        <div class="feature_control_container">
+            <span aria-hidden="true">Highlight Border</span>
+            <label class="mask_scope radio_group">
+                <input role="checkbox" aria-roledescription="radio group" aria-label="highlight border flashing"  type="checkbox" id="highlight_border_flashing" data-ace-id="highlight_border_flashing" name="option" onclick="onHighlightBorderCheckboxChanged(this)" checked>
+                <label for="highlight_border_flashing">Flashing</label>
+                <input role="checkbox" aria-roledescription="radio group" aria-label="highlight border no animation" type="checkbox" id="highlight_border_no_animation" data-ace-id="highlight_border_no_animation" name="option" onclick="onHighlightBorderCheckboxChanged(this)">
+                <label for="highlight_border_no_animation">No animation</label>
+            </label>
+        </div>
+    </div>
+    <div class="row_divider" aria-hidden="true"> </div>
+    <div class="row" aria-label="sonification" aria-atomic="true">
+        <div class="feature_checkbox_container hide">
+            <label class="round_check_box_label">
+                <input role="checkbox" aria-label="enable sonification toggle" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
+            </label>
+        </div>
+        <div class="feature_control_container">
+            <span aria-hidden="true">Sonification</span>
+            <label class="mask_scope switch">
+                <span class="mask"></span>
+                <input role="checkbox" aria-roledescription="toggle switch" aria-label="activate sonification" type="checkbox" onchange="onSonificationCheckboxChanged(this)">
+                <span class="toggle round">
+                    </span>
+                <div class="focus_border with_toggle_switch"></div>
+            </label>
+        </div>
+    </div>
+    <div class="row_divider" aria-hidden="true"> </div>
+    <div class="row" aria-label="sonification sound effect" aria-atomic="true">
+        <div class="feature_checkbox_container hide">
+            <label class="round_check_box_label">
+                <input role="checkbox" aria-label="enable sonification sound effect selection" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
+            </label>
+        </div>
+        <div class="feature_control_container">
+            <span aria-hidden="true">Sonification<br>Sound Effect</span>
+            <label class="mask_scope radio_group">
+                <input role="checkbox" aria-roledescription="radio group" aria-label="sonification sound effect 1" type="checkbox" id="sonification_sfx_1" data-ace-id="sonification_sfx_1" name="option" onclick="onSonificationSFXCheckboxChanged(this)" checked>
+                <label for="sonification_sfx_1">Option 1</label>
+                <input role="checkbox" aria-roledescription="radio group" aria-label="sonification sound effect 2"  type="checkbox" id="sonification_sfx_2" data-ace-id="sonification_sfx_2" name="option" onclick="onSonificationSFXCheckboxChanged(this)">
+                <label for="sonification_sfx_2">Option 2</label>
+            </label>
+        </div>
+    </div>
+    <div class="row_divider" aria-hidden="true"> </div>
+    <div class="row" aria-label="sonification feedback strategy" aria-atomic="true">
+        <div class="feature_checkbox_container hide">
+            <label class="round_check_box_label">
+                <input role="checkbox" aria-label="enable sonification feedback strategy selection" aria-checked="true" tabindex="0" type="checkbox" class="round_check_box" checked>
+                <div class="focus_border with_control_checkbox"></div>
+            </label>
+        </div>
+        <div class="feature_control_container">
+            <span aria-hidden="true">Sonification<br>Feedback Strategy</span>
+            <label class="mask_scope radio_group">
+                <input role="checkbox" aria-roledescription="radio group" aria-label="volume-based sonification" type="checkbox" id="sonification_volume_based" data-ace-id="sonification_volume_based" name="option" onclick="onSonificationStrategyCheckboxChanged(this)" checked>
+                <label for="sonification_volume_based">Volume</label>
+                <input role="checkbox" aria-roledescription="radio group" aria-label="tempo-based sonification"  type="checkbox" id="sonification_tempo_based" data-ace-id="sonification_tempo_based" name="option" onclick="onSonificationStrategyCheckboxChanged(this)">
+                <label for="sonification_tempo_based">Tempo</label>
             </label>
         </div>
     </div>
