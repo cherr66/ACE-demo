@@ -487,3 +487,7 @@ input[type="checkbox"]:focus + .focus_border.with_control_checkbox{
     height: 28px;
     border-radius: 10px
 }
+
+.radio_group input[type='checkbox']{
+    transform: scale(1.5);
+}

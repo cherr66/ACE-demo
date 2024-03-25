@@ -329,6 +329,37 @@ const onHighlightCheckboxChanged =(checkbox) => {
     window.postMessage(messageData, window.location.href);
 };
 
+const onHighlightBorderCheckboxChanged =(checkbox) =>{
+    if(!checkbox){
+        return;
+    }
+    const sibling = Array.from(checkbox.parentElement.querySelectorAll('input[type="checkbox"]')).filter(element => element !== checkbox)[0];
+    sibling.checked = !checkbox.checked;
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "setHighlightBorderAnimation",
+        parameters: {
+            newValue: checkbox === checkbox.parentElement.querySelector('[data-ace-id="highlight_border_flashing"]')
+        }};
+    window.postMessage(messageData, window.location.href);
+};
+
+const setHighlightBorderCheckboxEventListener =() =>{
+    const noAnimation = getElementByDataID('highlight_border_no_animation');
+    const flashing = getElementByDataID('highlight_border_flashing');
+    noAnimation.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            flashing.checked = !noAnimation.checked; // this callback fired before checkbox onchange callback
+        }
+    });
+    flashing.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            noAnimation.checked = !flashing.checked;
+        }
+    });
+}
+
 const onNarrationCheckboxChanged =(checkbox) => {
     if(isSettingModeOn){
         return;
@@ -375,6 +406,78 @@ const onSonificationCheckboxChanged =(checkbox) => {
     window.postMessage(messageData, window.location.href);
     checkbox.checked = false;
 };
+
+const onSonificationSFXCheckboxChanged =(checkbox) => {
+    if(!checkbox){
+        return;
+    }
+    const sibling = Array.from(checkbox.parentElement.querySelectorAll('input[type="checkbox"]')).filter(element => element !== checkbox)[0];
+    sibling.checked = !checkbox.checked;
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "setSonificationSFX",
+        parameters: {
+            newValue: (checkbox.checked)?
+                checkbox === checkbox.parentElement.querySelector('[data-ace-id="sonification_sfx_1"]'):
+                sibling === checkbox.parentElement.querySelector('[data-ace-id="sonification_sfx_1"]')
+        }};
+    window.postMessage(messageData, window.location.href);
+};
+
+const setSonificationSFXCheckboxEventListener =() =>{
+    const sfx1 = getElementByDataID('sonification_sfx_1');
+    const sfx2 = getElementByDataID('sonification_sfx_2');
+    sfx1.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            sfx2.checked = !sfx1.checked; // this callback fired before checkbox onchange callback
+        }
+    });
+    sfx2.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            sfx1.checked = !sfx2.checked;
+        }
+    });
+}
+
+const onSonificationStrategyCheckboxChanged =(checkbox) => {
+    if(!checkbox){
+        return;
+    }
+    const sibling = Array.from(checkbox.parentElement.querySelectorAll('input[type="checkbox"]')).filter(element => element !== checkbox)[0];
+    if(!checkbox.checked && !sibling.checked){
+        sibling.checked = true;
+    }
+
+    const messageData = {
+        sender: "popup.js",
+        functionName: "setSonificationStrategy",
+        parameters: {
+            newValue: {volumeBased: checkbox.checked, tempoBased: sibling.checked},
+        }};
+    window.postMessage(messageData, window.location.href);
+};
+
+const setSonificationStrategyCheckboxEventListener =() =>{
+    const volumeBased = getElementByDataID('sonification_volume_based');
+    const tempoBased = getElementByDataID('sonification_tempo_based');
+    volumeBased.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            if(!volumeBased.checked && !tempoBased.checked){
+                tempoBased.checked = true;
+            }
+        }
+    });
+    tempoBased.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            if(!volumeBased.checked && !tempoBased.checked){
+                volumeBased.checked = true;
+            }
+        }
+    });
+}
+
+
 
 const setVolumeSliderListener = (volumeBtn, volumeSlider, volumeSliderValue, regularSVG, muteSVG) => {
     const initialValue = volumeSliderValue.value
@@ -514,6 +617,9 @@ const initialize = () => {
     setCursorSizeSliderListener();
     setFontFamilyDropDown();
     setNarrationVolumeSliderListener();
+    setHighlightBorderCheckboxEventListener();
+    setSonificationSFXCheckboxEventListener();
+    setSonificationStrategyCheckboxEventListener();
     // setGameVolumeSliderListener();
     // setSonificationVolumeSliderListener();
     collectFeatureControls();

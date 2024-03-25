@@ -17,8 +17,8 @@ function isInteractiveNode(node) {
 const interactiveElementsObserver = new MutationObserver(async mutationsList => {
     for (let mutation of mutationsList) {
         // If the mutation is caused by our highlight, skip it.
-        if ((mutation.addedNodes.length === 1 && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains('xuan'))||
-            mutation.removedNodes.length === 1 && mutation.removedNodes[0].classList && mutation.removedNodes[0].classList.contains('xuan')) {
+        if ((mutation.addedNodes.length === 1 && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains('ace_demo_highlight'))||
+            mutation.removedNodes.length === 1 && mutation.removedNodes[0].classList && mutation.removedNodes[0].classList.contains('ace_demo_highlight')) {
             continue;
         }
 
@@ -265,7 +265,9 @@ function toggleSonification(newValue){
         const radarPlaybackRateRange = {min: 1, max: 5};
 
         // stereo panner for radar audio
-        const radarAudio = new Audio(chrome.runtime.getURL('audios/radar.mp3'));
+        const radarAudio = (isSonificationSFXVersion1)?
+            new Audio(chrome.runtime.getURL('audios/radar.mp3')):
+            new Audio(chrome.runtime.getURL('audios/steady.mp3'));
         const audioContext = new AudioContext();
         const panner = audioContext.createStereoPanner();
         const source = audioContext.createMediaElementSource(radarAudio);
@@ -316,26 +318,19 @@ function toggleSonification(newValue){
                 // distance calculation method 2
                 if(newDistance > distance){
                     radarAudio.volume = 0;
+                    radarAudio.playbackRate = radarPlaybackRateRange.min;
                     if(newDistance > maxDistance){
                         maxDistance = newDistance;
                     }
                 }else{
                     // change volume according to distance difference
-                    radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
-
-                    // TODO FOR TESTING 1: playback rate
-                    // radarAudio.volume = radarAudioVolumeRange.min;
-                    // radarAudio.playbackRate = radarPlaybackRateRange.min + (maxDistance - newDistance)/maxDistance * (radarPlaybackRateRange.max - radarPlaybackRateRange.min);
+                    if(isSonificationVolumeBased){
+                        radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
+                    }
+                    if(isSonificationTempoBased){
+                        radarAudio.playbackRate = radarPlaybackRateRange.min + (maxDistance - newDistance)/maxDistance * (radarPlaybackRateRange.max - radarPlaybackRateRange.min);
+                    }
                 }
-
-                // distance calculation method 1
-                // if(newDistance > distance){
-                //     radarAudio.volume = 0;
-                //     maxDistance = newDistance;
-                // }else{
-                //     // change volume according to distance difference
-                //     radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
-                // }
                 distance = newDistance;
             }
         }
@@ -395,7 +390,7 @@ function toggleSonification(newValue){
                     radarAudio.loop = true;
                     radarAudio.currentTime = 0;
                     radarAudio.volume = radarAudioVolumeRange.min;
-                    // radarAudio.playbackRate = radarPlaybackRateRange.min;// TODO FOR TESTING 1: playback rate
+                    radarAudio.playbackRate = radarPlaybackRateRange.min;
                     setBinauralSound();
                     radarAudio.play().then(r => {});
                     targetElement.addEventListener('mouseover', onInteractiveElementFound);
@@ -425,6 +420,7 @@ function toggleSonification(newValue){
         function quitSonification(){
             speak('quit sonification');
             radarAudio.volume = 0;
+            radarAudio.playbackRate = radarPlaybackRateRange.min;
             document.removeEventListener('mousemove', onSonificationMouseMove);
             document.removeEventListener('keydown', onSonificationKeyDown);
             document.removeEventListener('click', onSonificationClick);
@@ -447,6 +443,17 @@ function toggleSonification(newValue){
             }
         }
     }
+}
+
+let isSonificationSFXVersion1 = true;
+let isSonificationVolumeBased = true;
+let isSonificationTempoBased = false;
+function setSonificationSFX(isOption1) {
+    isSonificationSFXVersion1 = isOption1;
+}
+function setSonificationStrategy(newValue){
+    isSonificationVolumeBased = newValue.volumeBased;
+    isSonificationTempoBased = newValue.tempoBased;
 }
 
 
@@ -582,9 +589,17 @@ function injectARIAHidden(interactiveElem){
  */
 const highlightBorderWidth = 4;
 const highlightPadding = 1;
-// TODO change name
-const highlightCSS = ` 
-    .xuan {
+let isHighlightBorderAnimated = true;
+const highlightCSSNotAnimated = ` 
+    .ace_demo_highlight {
+        // z-index: -1;!important;
+        border: ${highlightBorderWidth}px dashed greenyellow;!important;
+        position: absolute;!important;
+        pointer-events: none;!important;
+    }
+`;
+const highlightCSSAnimated = ` 
+    .ace_demo_highlight {
         // z-index: -1;!important;
         border: ${highlightBorderWidth}px dashed greenyellow;!important;
         position: absolute;!important;
@@ -618,7 +633,7 @@ function generateHighlight(interactiveElem){
     }
     else{
         const highlight = document.createElement('div');
-        highlight.classList.add('xuan');
+        highlight.classList.add('ace_demo_highlight');
         setHighlightRect(interactiveElem, highlight);
         highlight.style.zIndex = getNumericalZIndex(interactiveElem).toString();
         interactiveElem.parentNode.insertBefore(highlight, interactiveElem);
@@ -636,7 +651,7 @@ function removeHighlight(index){
 const injectHighlightCSS =() => {
     const styleElement = document.createElement('style');
     styleElement.id = highlightCSSID;
-    styleElement.textContent = highlightCSS;
+    styleElement.textContent = (isHighlightBorderAnimated)? highlightCSSAnimated: highlightCSSNotAnimated;
     document.head.appendChild(styleElement);
 };
 
@@ -661,4 +676,12 @@ function setHighlightRect(interactiveElem, highlight){
     highlight.style.height = Math.min(interactiveElem.offsetHeight + offset * 2, maxHeight)  + 'px';
     highlight.style.top = Math.max(interactiveElem.offsetTop - offset, minTop) + 'px';
     highlight.style.left = Math.max(interactiveElem.offsetLeft - offset, minLeft) + 'px';
+}
+
+function setHighlightBorderAnimation(flashing){
+    isHighlightBorderAnimated = flashing;
+    const styleElem = document.getElementById(highlightCSSID);
+    if(styleElem){
+        styleElem.textContent = (isHighlightBorderAnimated)? highlightCSSAnimated: highlightCSSNotAnimated;
+    }
 }
