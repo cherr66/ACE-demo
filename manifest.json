@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ace Demo",
-  "description": "A sticky-note-like popup",
+  "description": "A tool crafted to enhance accessibility for visually impaired individuals while engaging with web games.",
   "version": "0.1",
   "icons": {
     "16": "images/icon-16.png",
