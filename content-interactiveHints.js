@@ -326,6 +326,8 @@ function toggleSonification(newValue){
                     // change volume according to distance difference
                     if(isSonificationVolumeBased){
                         radarAudio.volume = radarAudioVolumeRange.min + (maxDistance - newDistance)/maxDistance * (radarAudioVolumeRange.max - radarAudioVolumeRange.min);
+                    }else{
+                        radarAudio.volume = radarAudioVolumeRange.max;
                     }
                     if(isSonificationTempoBased){
                         radarAudio.playbackRate = radarPlaybackRateRange.min + (maxDistance - newDistance)/maxDistance * (radarPlaybackRateRange.max - radarPlaybackRateRange.min);
@@ -389,7 +391,11 @@ function toggleSonification(newValue){
                     speak(`${prefix}. ${elementToString.get(targetElement)}.`);
                     radarAudio.loop = true;
                     radarAudio.currentTime = 0;
-                    radarAudio.volume = radarAudioVolumeRange.min;
+                    if(isSonificationVolumeBased){
+                        radarAudio.volume = radarAudioVolumeRange.min;
+                    }else{
+                        radarAudio.volume = radarAudioVolumeRange.max;
+                    }
                     radarAudio.playbackRate = radarPlaybackRateRange.min;
                     setBinauralSound();
                     radarAudio.play().then(r => {});

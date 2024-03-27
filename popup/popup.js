@@ -340,7 +340,7 @@ const onHighlightBorderCheckboxChanged =(checkbox) =>{
         sender: "popup.js",
         functionName: "setHighlightBorderAnimation",
         parameters: {
-            newValue: checkbox === checkbox.parentElement.querySelector('[data-ace-id="highlight_border_flashing"]')
+            newValue: checkbox.parentElement.querySelector('[data-ace-id="highlight_border_flashing"]').checked
         }};
     window.postMessage(messageData, window.location.href);
 };
@@ -350,14 +350,26 @@ const setHighlightBorderCheckboxEventListener =() =>{
     const flashing = getElementByDataID('highlight_border_flashing');
     noAnimation.addEventListener('keyup', (event) => {
         if(event.key === 'Enter'){
-            flashing.checked = !noAnimation.checked; // this callback fired before checkbox onchange callback
+            flashing.checked = !noAnimation.checked;
+            postMessage();
         }
     });
     flashing.addEventListener('keyup', (event) => {
         if(event.key === 'Enter'){
             noAnimation.checked = !flashing.checked;
+            postMessage();
         }
     });
+
+    function postMessage(){
+        const messageData = {
+            sender: "popup.js",
+            functionName: "setHighlightBorderAnimation",
+            parameters: {
+                newValue: flashing.checked
+            }};
+        window.postMessage(messageData, window.location.href);
+    }
 }
 
 const onNarrationCheckboxChanged =(checkbox) => {
@@ -418,9 +430,7 @@ const onSonificationSFXCheckboxChanged =(checkbox) => {
         sender: "popup.js",
         functionName: "setSonificationSFX",
         parameters: {
-            newValue: (checkbox.checked)?
-                checkbox === checkbox.parentElement.querySelector('[data-ace-id="sonification_sfx_1"]'):
-                sibling === checkbox.parentElement.querySelector('[data-ace-id="sonification_sfx_1"]')
+            newValue: checkbox.parentElement.querySelector('[data-ace-id="sonification_sfx_1"]').checked
         }};
     window.postMessage(messageData, window.location.href);
 };
@@ -430,14 +440,26 @@ const setSonificationSFXCheckboxEventListener =() =>{
     const sfx2 = getElementByDataID('sonification_sfx_2');
     sfx1.addEventListener('keyup', (event) => {
         if(event.key === 'Enter'){
-            sfx2.checked = !sfx1.checked; // this callback fired before checkbox onchange callback
+            sfx2.checked = !sfx1.checked;
+            postMessage();
         }
     });
     sfx2.addEventListener('keyup', (event) => {
         if(event.key === 'Enter'){
             sfx1.checked = !sfx2.checked;
+            postMessage();
         }
     });
+
+    function postMessage(){
+        const messageData = {
+            sender: "popup.js",
+            functionName: "setSonificationSFX",
+            parameters: {
+                newValue: sfx1.checked
+            }};
+        window.postMessage(messageData, window.location.href);
+    }
 }
 
 const onSonificationStrategyCheckboxChanged =(checkbox) => {
@@ -466,6 +488,7 @@ const setSonificationStrategyCheckboxEventListener =() =>{
             if(!volumeBased.checked && !tempoBased.checked){
                 tempoBased.checked = true;
             }
+            postMessage();
         }
     });
     tempoBased.addEventListener('keyup', (event) => {
@@ -473,8 +496,19 @@ const setSonificationStrategyCheckboxEventListener =() =>{
             if(!volumeBased.checked && !tempoBased.checked){
                 volumeBased.checked = true;
             }
+            postMessage();
         }
     });
+
+    function postMessage(){
+        const messageData = {
+            sender: "popup.js",
+            functionName: "setSonificationStrategy",
+            parameters: {
+                newValue: {volumeBased: volumeBased.checked, tempoBased: tempoBased.checked},
+            }};
+        window.postMessage(messageData, window.location.href);
+    }
 }
 
 
